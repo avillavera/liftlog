@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import { prisma } from "./db/prisma.js";
 
 const app = express();
 
@@ -9,6 +10,16 @@ app.use(express.json());
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
+});
+
+app.get("/health/db", async (_req, res) => {
+  await prisma.$queryRaw`SELECT 1`;
+  res.json({ ok: true });
+});
+
+app.get("/db-check", async (_req, res) => {
+  const result = await prisma.user.findMany({ take: 1 });
+  res.json({ ok: true, sampleUsers: result });
 });
 
 const PORT = Number(process.env.PORT) || 4000;
