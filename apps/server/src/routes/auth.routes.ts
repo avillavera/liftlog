@@ -13,11 +13,18 @@ function toUserResponse(user: { id: string; email: string; createdAt: Date; upda
 }
 
 authRouter.post("/register", async (req, res) => {
+
+  //parse
   const parsed = registerSchema.safeParse(req.body);
+
   if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid input", details: parsed.error.format() });
+    return res.status(400).json({ 
+        error: "Invalid input", 
+        details: z.treeifyError(parsed.error) 
+    });
   }
   
+  //Normalize the email and hashpass
   const email = parsed.data.email.toLowerCase().trim();
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
 
@@ -29,7 +36,8 @@ authRouter.post("/register", async (req, res) => {
 
     const token = signToken({ userId: user.id });
     return res.status(201).json({ token, user: toUserResponse(user) });
-  } catch (e: any) {
+  } 
+  catch (e: any) {
     // Prisma unique constraint (email)
     if (e?.code === "P2002") {
         return res.status(409).json({ error: "Email already in use" });
