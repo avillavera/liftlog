@@ -73,6 +73,8 @@ authRouter.post("/login", async (req, res) => {
   }
 
   const token = signToken({ userId: user.id });
+  // Strip passwordHash
   const { passwordHash, ...safeUser } = user;
+
   return res.json({ token, user: safeUser });
 });
