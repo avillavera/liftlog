@@ -68,8 +68,7 @@ export async function login(req: Request, res: Response) {
   }
 
   const token = signToken({ userId: user.id });
-  // Strip passwordHash
-  const { passwordHash, ...safeUser } = user;
+  const { passwordHash, ...safeUser } = user; // Strip passwordHash
 
   return res.json({ token, user: safeUser });
 }

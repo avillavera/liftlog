@@ -11,7 +11,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "esnext",
-    "types": ["node"],
+    "types": ["node","jest"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -44,7 +44,7 @@
     "skipLibCheck": true,
   },
   
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/test/setupEnv.cjs"],
   "exclude": [
     "node_modules",
     "dist",
