@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { prisma } from "./db/prisma.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
 
@@ -26,3 +27,6 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 app.use("/auth", authRouter);
+
+app.use(notFound);
+app.use(errorHandler);
