@@ -54,3 +54,7 @@ test("GET /auth/me returns current user when authorized", async () => {
 
   expect(res.body.user.email).toBe("c@test.com");
 });
+
+test("GET /auth/me returns 401 without token", async () => {
+  await request(app).get("/auth/me").expect(401);
+});
