@@ -2,12 +2,26 @@ import type { AxiosError } from "axios";
 
 export function getErrorMessage(err: unknown): string {
   const e = err as AxiosError<any>;
+  const data = e?.response?.data;
 
-  const message =
-    e?.response?.data?.message ||
-    e?.response?.data?.error ||
-    e?.message ||
-    "Something went wrong";
+  if(typeof data?.message === "string") {
+    return data.message;
+  }
 
-  return typeof message === "string" ? message : "Something went wrong";
+  if(typeof data?.error === "string") {
+    return data.error;
+  }
+
+  if(Array.isArray(data?.issues) && data.issues.length > 0) {
+    const first = data.issues[0];
+    if(typeof first?.message === "string") {
+      return first.message;
+    }
+  }
+
+  if(typeof e?.message === "string") {
+    return e.message;
+  }
+
+  return "Something went wrong";
 }

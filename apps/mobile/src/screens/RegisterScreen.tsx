@@ -17,7 +17,23 @@ export default function RegisterScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const validate = () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) return "Email is required.";
+    if (!trimmedEmail.includes("@")) return "Enter a valid email.";
+    if (!password) return "Password is required.";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+
+    return null;
+  };
+
   const onSubmit = async () => {
+    const msg = validate();
+    if (msg) {
+      setError(msg);
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
     try {
