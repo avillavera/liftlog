@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../navigation/AuthNavigator";
 import BrandHeader from "../components/BrandHeader";
 import {authStyles as styles} from "../styles/auth.styles";
-import { login } from "../api/auth";
+import authApi from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { getErrorMessage } from "../utils/apiError";
 
@@ -23,7 +23,7 @@ export default function LoginScreen({ navigation }: Props) {
     setError(null);
     setIsSubmitting(true);
     try {
-        const data = await login({ email: email.trim(), password });
+        const data = await authApi.login({ email: email.trim(), password });
         setSession({ token: data.token, user: data.user });
     } 
     catch (err) {
