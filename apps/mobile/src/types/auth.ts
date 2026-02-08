@@ -7,7 +7,7 @@ export type AuthStatus = "signedOut" | "signedIn";
 
 // for store
 export type AuthState = {
-    status: AuthState;
+    status: AuthStatus;
     token: string | null;
     user: AuthUser | null;
 
