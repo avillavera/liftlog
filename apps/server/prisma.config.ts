@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import "dotenv/config";
-import { defineConfig } from "prisma/config";
+import { defineConfig, env } from "prisma/config";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -10,8 +10,11 @@ function requireEnv(name: string): string {
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
   datasource: {
     url: requireEnv("DATABASE_URL"),
-  },
+  }
 });
 
