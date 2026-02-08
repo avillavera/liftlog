@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Image } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../navigation/AuthNavigator";
+import BrandHeader from "../components/BrandHeader";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
@@ -11,11 +12,8 @@ export default function LoginScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../../assets//brand/logo-icon.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+
+      <BrandHeader subtitle="Log workouts. Track progress." />
 
       <Text style={styles.title}>Welcome back</Text>
 
