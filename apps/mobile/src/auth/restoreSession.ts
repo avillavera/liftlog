@@ -3,32 +3,29 @@ import authApi from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 
 export async function restoreSession() {
-  const setHydrating = useAuthStore.getState().setHydrating;
-  const setSession = useAuthStore.getState().setSession;
-  const clearSession = useAuthStore.getState().clearSession;
+  const { setHydrating, setSession, clearSession } = useAuthStore.getState();
 
   setHydrating(true);
 
   try {
     const token = await getToken();
+
     if (!token) {
       clearSession();
       return;
     }
 
-    // Put token in memory so axios interceptor attaches it for /auth/me
-    // ( Not marking signed-in yet—only after /me succeeds)
+    // Make token available to API layer (axios interceptor reads it from the store)
     useAuthStore.setState({ token });
 
-    const data = await authApi.me(); // expects { user }
-    setSession({ token, user: data.user });
+    // Validate token with backend
+    const { user } = await authApi.me();
+
+    setSession({ token, user });
   } catch {
-    // Token invalid/expired/etc.
     try {
-      await deleteToken(); // web-safe now
-    } catch {
-      // ignore storage errors
-    }
+      await deleteToken();
+    } catch {}
     clearSession();
   } finally {
     setHydrating(false);
