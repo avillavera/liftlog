@@ -24,7 +24,11 @@ export async function restoreSession() {
     setSession({ token, user: data.user });
   } catch {
     // Token invalid/expired/etc.
-    await deleteToken();
+    try {
+      await deleteToken(); // web-safe now
+    } catch {
+      // ignore storage errors
+    }
     clearSession();
   } finally {
     setHydrating(false);
