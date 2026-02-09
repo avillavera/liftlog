@@ -17,8 +17,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  clearSession: () => {
-    deleteToken();
+  clearSession: async () => {
+    await deleteToken();
     set({
       status: "signedOut",
       token: null,

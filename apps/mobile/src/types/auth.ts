@@ -15,6 +15,6 @@ export type AuthState = {
     isHydrating: boolean
 
     setSession: (session: { token: string; user: AuthUser }) => void;
-    clearSession: () => void;
+    clearSession: () => Promise<void>;
     setHydrating: (value: boolean) => void;
 };
