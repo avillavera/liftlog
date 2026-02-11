@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Image, Text, StyleSheet } from "react-native";
 
 type Props = {
   subtitle?: string;
@@ -7,14 +7,15 @@ type Props = {
 export default function BrandHeader({ subtitle }: Props) {
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../../assets/brand/logo-icon.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      <View style={styles.logoBadge}>
+        <Image
+          source={require("../../assets/brand/logo-mark.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
 
       <Text style={styles.title}>LiftLog</Text>
-
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
     </View>
   );
@@ -23,23 +24,42 @@ export default function BrandHeader({ subtitle }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 28,
   },
+
+  // BIG presence even with thin lines
+  logoBadge: {
+    width: 176,
+    height: 176,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+
+    // subtle “badge” that still matches your gradient theme
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.08)",
+    marginBottom: 10,
+  },
+
+  // logo stays transparent; we scale it up inside the badge
   logo: {
-    height: 84,
-    width: 84,
-    marginBottom: 12,
+    width: 150,
+    height: 150,
+    opacity: 0.95,
   },
+
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "700",
-    color: "#1F2933",
-    letterSpacing: 0.5,
+    color: "#0F172A",
+    letterSpacing: 0.3,
   },
+
   subtitle: {
     marginTop: 6,
     fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
+    color: "#334155",
   },
 });
+

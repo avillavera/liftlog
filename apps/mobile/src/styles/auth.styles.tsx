@@ -3,9 +3,8 @@ import { StyleSheet } from "react-native";
 export const authStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F6F8F7",
-    justifyContent: "center",
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 72,
   },
 
   title: {

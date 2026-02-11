@@ -7,6 +7,8 @@ import {authStyles as styles} from "../styles/auth.styles";
 import authApi from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { getErrorMessage } from "../utils/apiError";
+import AuthBackground from "../components/AuthBackground";
+
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 
@@ -48,42 +50,44 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <AuthBackground>
+      <View style={styles.container}>
 
-      <BrandHeader subtitle="Log workouts. Track progress." />
+        <BrandHeader subtitle="Log workouts. Track progress." />
 
-      <Text style={styles.title}>Create your account</Text>
+        <Text style={styles.title}>Create your account</Text>
 
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#6B7280"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-      />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#6B7280"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#6B7280"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#6B7280"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
 
-      {error ? <Text style={{ color: "crimson", textAlign: "center", marginBottom: 12 }}>{error}</Text> : null}
+        {error ? <Text style={{ color: "crimson", textAlign: "center", marginBottom: 12 }}>{error}</Text> : null}
 
-      <Pressable style={styles.primaryButton} onPress={onSubmit} disabled={isSubmitting}>
-        <Text style={styles.primaryButtonText}>{isSubmitting ? "Registering..." : "Register"}</Text>
-      </Pressable>
+        <Pressable style={styles.primaryButton} onPress={onSubmit} disabled={isSubmitting}>
+          <Text style={styles.primaryButtonText}>{isSubmitting ? "Registering..." : "Register"}</Text>
+        </Pressable>
 
-      <Pressable onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.link}>
-          Already have an account? <Text style={styles.linkStrong}>Log In</Text>
-        </Text>
-      </Pressable>
-    </View>
+        <Pressable onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.link}>
+            Already have an account? <Text style={styles.linkStrong}>Log In</Text>
+          </Text>
+        </Pressable>
+      </View>
+    </AuthBackground>
   );
 }
