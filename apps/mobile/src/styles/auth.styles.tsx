@@ -26,7 +26,7 @@ export const authStyles = StyleSheet.create({
   },
 
   primaryButton: {
-    backgroundColor: "#1F2933",
+    backgroundColor: "#1F3A3D",
     padding: 16,
     borderRadius: 10,
     marginTop: 12,
