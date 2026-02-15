@@ -12,6 +12,23 @@ datasource db {
   provider = "postgresql"
 }
 
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  ARMS
+  CORE
+}
+
+enum Equipment {
+  BARBELL
+  DUMBBELL
+  MACHINE
+  CABLE
+  BODYWEIGHT
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -23,8 +40,8 @@ model User {
 model Exercise {
   id          String   @id @default(cuid())
   name        String
-  muscleGroup String
-  equipment   String
+  muscleGroup MuscleGroup
+  equipment   Equipment
   createdAt   DateTime @default(now())
 
   @@index([name])
