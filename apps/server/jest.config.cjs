@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: "node",
   testMatch: ["**/__tests__/**/*.test.ts"],
   setupFiles: ["<rootDir>/src/test/setupEnv.cjs"],
+  globalSetup: "<rootDir>/src/test/globalSetup.cjs",
 
   extensionsToTreatAsEsm: [".ts"],
 

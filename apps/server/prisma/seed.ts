@@ -46,7 +46,10 @@ async function main() {
   // For MVP/dev seeding, keeping it deterministic.
   // Might adjust this to avoid wiping user created exercises if supported later.
   await prisma.exercise.deleteMany();
-  await prisma.exercise.createMany({ data: EXERCISES });
+  await prisma.exercise.createMany({
+    data: EXERCISES,
+    skipDuplicates: true,
+  });
 }
 
 main()

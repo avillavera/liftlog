@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "../lib/prisma.js";
+import { prisma } from "../db/prisma.js";
 
 // better than parseInt imo
 function parseLimit(v: unknown): number {
@@ -12,10 +12,13 @@ function parseLimit(v: unknown): number {
 }
 
 export async function getExercises(req: Request, res: Response) {
+  // handle other types so it returns a string  
   const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  // undefined returns all in Prisma
   const cursor = typeof req.query.cursor === "string" ? req.query.cursor : undefined;
   const limit = parseLimit(req.query.limit);
 
+  // insensitive mode can handle "bench", ""BENCH" or ""bench press"
   const where: Prisma.ExerciseWhereInput | undefined = q
     ? { name: { contains: q, mode: "insensitive" } }
     : undefined;
