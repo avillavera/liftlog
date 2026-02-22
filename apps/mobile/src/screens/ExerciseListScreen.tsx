@@ -10,22 +10,61 @@ export default function ExerciseListScreen() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const debouncedQuery = useDebouncedValue(query, 350);
+
+  async function handleEndReached() {
+    if (loading) return;
+    if (loadingMore) return;
+    if (!nextCursor) return;
+
+    setLoadingMore(true);
+    setErrorMsg(null);
+
+    try {
+      const data = await getExercises({
+        limit: 5,
+        cursor: nextCursor,
+        q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
+      });
+      setNextCursor(data.nextCursor);
+      setItems((prev) => {
+        const seen = new Set(prev.map((x) => x.id));
+        const merged = [...prev];
+        for (const item of data.items) {
+          if (!seen.has(item.id)) merged.push(item);
+        }
+        return merged;
+      });
+    } catch {
+      setErrorMsg("Could not load more exercises.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
+    async function loadFirstPage() {
       setLoading(true);
+      setLoadingMore(false);
       setErrorMsg(null);
 
       try {
+        setItems([]);
+        setNextCursor(null);
         const data = await getExercises({ 
-          limit: 20,
+          limit: 5,
           q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
         });
+
         if (cancelled) return;
+
         setItems(data.items);
+        setNextCursor(data.nextCursor);
       } catch {
         if (cancelled) return;
         setErrorMsg("Could not load exercises. Check server connection.");
@@ -35,7 +74,7 @@ export default function ExerciseListScreen() {
       }
     }
 
-    load();
+    loadFirstPage();
 
     return () => {
       cancelled = true;
@@ -71,6 +110,15 @@ export default function ExerciseListScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           contentContainerStyle={items.length === 0 ? styles.emptyContent : styles.listContent}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.6}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                <Text style={styles.mutedText}>Loading more…</Text>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <View style={styles.row}>
               <View style={styles.rowText}>
