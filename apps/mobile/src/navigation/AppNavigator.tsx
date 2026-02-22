@@ -1,14 +1,17 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useAuthStore } from "../stores/authStore";
+import ExerciseListScreen from "../screens/ExerciseListScreen";
+import HomeScreen from "../screens/HomeScreen";
 
-type AppStackParamList = {
+export type AppStackParamList = {
   Home: undefined;
+  ExerciseList: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
-function HomeScreen() {
+/* function HomeScreen() {
   const clearSession = useAuthStore((s) => s.clearSession);
 
   return (
@@ -19,12 +22,13 @@ function HomeScreen() {
       </Pressable>
     </View>
   );
-}
+} */
 
 export default function AppNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: "LiftLog" }} />
+      <Stack.Screen name="ExerciseList" component={ExerciseListScreen} options={{ title: "Exercises" }} />
     </Stack.Navigator>
   );
 }
