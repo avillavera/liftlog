@@ -1,21 +1,50 @@
-import React from "react";
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getExercises } from "../api/exercises";
 import type { Exercise } from "../types/exercise";
 
-const MOCK_EXERCISES: Exercise[] = [
-  { id: "1", name: "Back Squat", muscleGroup: "LEGS", equipment: "BARBELL" },
-  { id: "2", name: "Bench Press", muscleGroup: "CHEST", equipment: "BARBELL" },
-  { id: "3", name: "Bicep Curl", muscleGroup: "ARMS", equipment: "DUMBBELL" },
-];
-
 export default function ExerciseListScreen() {
+  const [items, setItems] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setErrorMsg(null);
+
+      try {
+        const data = await getExercises({ limit: 20 });
+        if (cancelled) return;
+        setItems(data.items);
+      } catch {
+        if (cancelled) return;
+        setErrorMsg("Could not load exercises. Check server connection.");
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Exercises</Text>
 
-      {/* Search UI scaffold only (no logic yet) */}
       <View style={styles.searchWrap}>
         <TextInput
+          value={query}
+          onChangeText={setQuery}
           placeholder="Search exercises"
           placeholderTextColor="#8b8b8b"
           style={styles.searchInput}
@@ -24,27 +53,37 @@ export default function ExerciseListScreen() {
         />
       </View>
 
-      <FlatList
-        data={MOCK_EXERCISES}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.meta}>
-                {item.muscleGroup} • {item.equipment}
-              </Text>
+      {loading ? (
+        <View style={styles.centerWrap}>
+          <Text style={styles.mutedText}>Loading…</Text>
+        </View>
+      ) : errorMsg ? (
+        <View style={styles.centerWrap}>
+          <Text style={styles.mutedText}>{errorMsg}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={items.length === 0 ? styles.emptyContent : styles.listContent}
+          renderItem={({ item }) => (
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.meta}>
+                  {item.muscleGroup} • {item.equipment}
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>No exercises found.</Text>
-          </View>
-        }
-      />
+          )}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={
+            <View style={styles.centerWrap}>
+              <Text style={styles.mutedText}>No exercises found.</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -52,6 +91,7 @@ export default function ExerciseListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
   title: { color: "#ffffff", fontSize: 28, fontWeight: "700", marginBottom: 12 },
+
   searchWrap: { marginBottom: 12 },
   searchInput: {
     height: 44,
@@ -62,7 +102,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#232330",
   },
+
   listContent: { paddingBottom: 20 },
+  emptyContent: { paddingBottom: 20, flexGrow: 1 },
+
   row: {
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -74,7 +117,9 @@ const styles = StyleSheet.create({
   rowText: { gap: 4 },
   name: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
   meta: { color: "#a7a7b3", fontSize: 12, fontWeight: "500" },
+
   separator: { height: 10 },
-  emptyWrap: { paddingTop: 24, alignItems: "center" },
-  emptyText: { color: "#a7a7b3" },
+
+  centerWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 12 },
+  mutedText: { color: "#a7a7b3" },
 });
