@@ -3,12 +3,14 @@ import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExercises } from "../api/exercises";
 import type { Exercise } from "../types/exercise";
+import useDebouncedValue from "../hooks/useDebouncedValue";
 
 export default function ExerciseListScreen() {
   const [items, setItems] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 350);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,7 +20,10 @@ export default function ExerciseListScreen() {
       setErrorMsg(null);
 
       try {
-        const data = await getExercises({ limit: 20 });
+        const data = await getExercises({ 
+          limit: 20,
+          q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
+        });
         if (cancelled) return;
         setItems(data.items);
       } catch {
@@ -35,7 +40,7 @@ export default function ExerciseListScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [debouncedQuery]);
 
   return (
     <SafeAreaView style={styles.container}>
