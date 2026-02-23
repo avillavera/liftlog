@@ -78,13 +78,42 @@ export default function ExerciseListScreen() {
     }
   }
 
+  async function handleRetry() {
+    setErrorMsg(null);
+    setLoading(true);
+
+    try {
+      const requestId = ++requestIdRef.current;
+      setLoadingMore(false);
+      setNextCursor(null);
+      setSearching(false);
+      const data = await getExercises({
+        limit: 10,
+        q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
+      });
+
+      if (requestId !== requestIdRef.current) return;
+
+      setItems(data.items);
+      setNextCursor(data.nextCursor);
+      hasLoadedOnceRef.current = true;
+    } catch {
+      setErrorMsg("Still cannot reach server.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
     async function loadFirstPage() {
       const isInitialLoad = !hasLoadedOnceRef.current;
 
-      if (isInitialLoad) setLoading(true);
+      if (isInitialLoad){ 
+        searchingStartRef.current = null;
+        setLoading(true);
+      }
       else {
         setSearching(true);
         searchingStartRef.current = Date.now();
@@ -163,9 +192,15 @@ export default function ExerciseListScreen() {
         <View style={styles.centerWrap}>
           <Text style={styles.mutedText}>Loading…</Text>
         </View>
-      ) : errorMsg ? (
+      ) : errorMsg && items.length === 0 ? (
         <View style={styles.centerWrap}>
           <Text style={styles.mutedText}>{errorMsg}</Text>
+
+          <View style={{ height: 12 }} />
+
+          <Text onPress={handleRetry} style={styles.retryBtn}>
+            Retry
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -234,9 +269,18 @@ const styles = StyleSheet.create({
   rowText: { gap: 4 },
   name: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
   meta: { color: "#a7a7b3", fontSize: 12, fontWeight: "500" },
-
+  
   separator: { height: 10 },
   searchingText: { color: "#a7a7b3", marginBottom: 8 },
   centerWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 12 },
   mutedText: { color: "#a7a7b3" },
+  retryBtn: {
+    color: "#fff",
+    fontWeight: "600",
+    backgroundColor: "#1f1f2a",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
 });
