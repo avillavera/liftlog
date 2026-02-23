@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExercises } from "../api/exercises";
@@ -13,6 +13,7 @@ export default function ExerciseListScreen() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const requestIdRef = useRef(0);
 
   const debouncedQuery = useDebouncedValue(query, 350);
 
@@ -25,11 +26,13 @@ export default function ExerciseListScreen() {
     setErrorMsg(null);
 
     try {
+      const requestId = ++requestIdRef.current;
       const data = await getExercises({
         limit: 10,
         cursor: nextCursor,
         q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
       });
+      if (requestId !== requestIdRef.current) return;
       setNextCursor(data.nextCursor);
       setItems((prev) => {
         const seen = new Set(prev.map((x) => x.id));
@@ -51,10 +54,14 @@ export default function ExerciseListScreen() {
     setErrorMsg(null);
 
     try {
+      const requestId = ++requestIdRef.current;
+
       const data = await getExercises({
         limit: 10,
         q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
       });
+
+      if (requestId !== requestIdRef.current) return;
 
       setItems(data.items);
       setNextCursor(data.nextCursor);
@@ -76,12 +83,16 @@ export default function ExerciseListScreen() {
       try {
         setItems([]);
         setNextCursor(null);
+
+        const requestId = ++requestIdRef.current;
+
         const data = await getExercises({ 
           limit: 10,
           q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
         });
 
         if (cancelled) return;
+        if (requestId !== requestIdRef.current) return;
 
         setItems(data.items);
         setNextCursor(data.nextCursor);
