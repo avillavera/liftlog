@@ -13,6 +13,10 @@ export default function ExerciseListScreen() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const searchingStartRef = useRef<number | null>(null);
+  const searchingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasLoadedOnceRef = useRef(false);
   const requestIdRef = useRef(0);
 
   const debouncedQuery = useDebouncedValue(query, 350);
@@ -52,6 +56,8 @@ export default function ExerciseListScreen() {
   async function handleRefresh() {
     setRefreshing(true);
     setErrorMsg(null);
+    setLoadingMore(false);
+    setNextCursor(null);
 
     try {
       const requestId = ++requestIdRef.current;
@@ -76,13 +82,19 @@ export default function ExerciseListScreen() {
     let cancelled = false;
 
     async function loadFirstPage() {
-      setLoading(true);
+      const isInitialLoad = !hasLoadedOnceRef.current;
+
+      if (isInitialLoad) setLoading(true);
+      else {
+        setSearching(true);
+        searchingStartRef.current = Date.now();
+      }
+
       setLoadingMore(false);
       setErrorMsg(null);
+      setNextCursor(null);
 
       try {
-        setItems([]);
-        setNextCursor(null);
 
         const requestId = ++requestIdRef.current;
 
@@ -92,16 +104,33 @@ export default function ExerciseListScreen() {
         });
 
         if (cancelled) return;
-        if (requestId !== requestIdRef.current) return;
-
-        setItems(data.items);
-        setNextCursor(data.nextCursor);
+        if (requestId === requestIdRef.current) {
+          setItems(data.items);
+          setNextCursor(data.nextCursor);
+          hasLoadedOnceRef.current = true;
+        }
       } catch {
         if (cancelled) return;
         setErrorMsg("Could not load exercises. Check server connection.");
       } finally {
         if (cancelled) return;
         setLoading(false);
+        const startedAt = searchingStartRef.current;
+        if (!startedAt) {
+          setSearching(false);
+        } else {
+          const elapsed = Date.now() - startedAt;
+          const minMs = 500;
+          const remaining = Math.max(0, minMs - elapsed);
+
+          if (searchingTimeoutRef.current) clearTimeout(searchingTimeoutRef.current);
+
+          searchingTimeoutRef.current = setTimeout(() => {
+            setSearching(false);
+            searchingStartRef.current = null;
+            searchingTimeoutRef.current = null;
+          }, remaining);
+        }
       }
     }
 
@@ -109,6 +138,7 @@ export default function ExerciseListScreen() {
 
     return () => {
       cancelled = true;
+      if (searchingTimeoutRef.current) clearTimeout(searchingTimeoutRef.current);
     };
   }, [debouncedQuery]);
 
@@ -127,6 +157,7 @@ export default function ExerciseListScreen() {
           autoCapitalize="none"
         />
       </View>
+      {searching ? <Text style={styles.searchingText}>Searching…</Text> : null}
 
       {loading ? (
         <View style={styles.centerWrap}>
@@ -191,7 +222,7 @@ const styles = StyleSheet.create({
 
   listContent: { paddingBottom: 20 },
   emptyContent: { paddingBottom: 20, flexGrow: 1 },
-
+  
   row: {
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -205,7 +236,7 @@ const styles = StyleSheet.create({
   meta: { color: "#a7a7b3", fontSize: 12, fontWeight: "500" },
 
   separator: { height: 10 },
-
+  searchingText: { color: "#a7a7b3", marginBottom: 8 },
   centerWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 12 },
   mutedText: { color: "#a7a7b3" },
 });
