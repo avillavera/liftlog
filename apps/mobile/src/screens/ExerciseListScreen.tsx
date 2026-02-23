@@ -12,6 +12,7 @@ export default function ExerciseListScreen() {
   const [query, setQuery] = useState("");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const debouncedQuery = useDebouncedValue(query, 350);
 
@@ -25,7 +26,7 @@ export default function ExerciseListScreen() {
 
     try {
       const data = await getExercises({
-        limit: 5,
+        limit: 10,
         cursor: nextCursor,
         q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
       });
@@ -45,6 +46,25 @@ export default function ExerciseListScreen() {
     }
   }
 
+  async function handleRefresh() {
+    setRefreshing(true);
+    setErrorMsg(null);
+
+    try {
+      const data = await getExercises({
+        limit: 10,
+        q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
+      });
+
+      setItems(data.items);
+      setNextCursor(data.nextCursor);
+    } catch {
+      setErrorMsg("Could not refresh exercises.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -57,7 +77,7 @@ export default function ExerciseListScreen() {
         setItems([]);
         setNextCursor(null);
         const data = await getExercises({ 
-          limit: 5,
+          limit: 10,
           q: debouncedQuery.trim() ? debouncedQuery.trim() : undefined,
         });
 
@@ -110,6 +130,8 @@ export default function ExerciseListScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           contentContainerStyle={items.length === 0 ? styles.emptyContent : styles.listContent}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.6}
           ListFooterComponent={
