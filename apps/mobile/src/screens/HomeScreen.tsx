@@ -23,15 +23,16 @@ export default function HomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>You’re signed in ✅</Text>
 
-      <Pressable
-        style={[styles.button, { marginBottom: 12 }]}
-        onPress={() => navigation.navigate("ExerciseList")}
-      >
+      <Pressable style={[styles.button, { marginBottom: 12 }]} onPress={() => navigation.navigate("ExerciseList")} >
         <Text style={styles.buttonText}>Open Exercise Library</Text>
       </Pressable>
 
       <Pressable style={styles.button} onPress={clearSession}>
         <Text style={styles.buttonText}>Log out</Text>
+      </Pressable>
+
+      <Pressable style={[styles.button, { marginBottom: 12 }]} onPress={() => navigation.navigate("WorkoutBuilder")} >
+        <Text style={styles.buttonText}>Start Workout</Text>
       </Pressable>
     </View>
   );

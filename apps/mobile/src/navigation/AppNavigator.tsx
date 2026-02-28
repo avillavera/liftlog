@@ -3,10 +3,12 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useAuthStore } from "../stores/authStore";
 import ExerciseListScreen from "../screens/ExerciseListScreen";
 import HomeScreen from "../screens/HomeScreen";
+import WorkoutBuilderScreen from "../screens/WorkoutBuilderScreen";
 
 export type AppStackParamList = {
   Home: undefined;
   ExerciseList: undefined;
+  WorkoutBuilder: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -29,6 +31,7 @@ export default function AppNavigator() {
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: "LiftLog" }} />
       <Stack.Screen name="ExerciseList" component={ExerciseListScreen} options={{ title: "Exercises" }} />
+      <Stack.Screen name="WorkoutBuilder" component={WorkoutBuilderScreen} options={{ title: "Workout Builder" }} />
     </Stack.Navigator>
   );
 }

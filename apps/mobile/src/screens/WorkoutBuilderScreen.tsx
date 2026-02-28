@@ -1,0 +1,118 @@
+import React from "react";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useWorkoutStore } from "../stores/workoutStore";
+
+export default function WorkoutBuilderScreen() {
+  const draft = useWorkoutStore((s) => s.draft);
+  const setName = useWorkoutStore((s) => s.setName);
+  const removeExercise = useWorkoutStore((s) => s.removeExercise);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Workout Builder</Text>
+
+      <View style={styles.card}>
+        <Text style={styles.label}>Workout name</Text>
+        <TextInput
+          value={draft.name}
+          onChangeText={setName}
+          placeholder="New Workout"
+          placeholderTextColor="#8b8b8b"
+          style={styles.input}
+          autoCorrect={false}
+        />
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.rowHeader}>
+          <Text style={styles.sectionTitle}>Exercises</Text>
+          <Text style={styles.count}>{draft.exercises.length}</Text>
+        </View>
+
+        {draft.exercises.length === 0 ? (
+          <Text style={styles.muted}>No exercises yet. Add from the library next.</Text>
+        ) : (
+          <FlatList
+            data={draft.exercises}
+            keyExtractor={(x) => x.id}
+            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+            renderItem={({ item }) => (
+              <View style={styles.exerciseRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.exerciseName}>{item.exercise.name}</Text>
+                  <Text style={styles.exerciseMeta}>
+                    {item.exercise.muscleGroup} • {item.exercise.equipment}
+                  </Text>
+                </View>
+
+                <Pressable onPress={() => removeExercise(item.id)} style={styles.removeBtn}>
+                  <Text style={styles.removeBtnText}>Remove</Text>
+                </Pressable>
+              </View>
+            )}
+          />
+        )}
+      </View>
+
+      {/* Next task: "Add exercises" via navigation from ExerciseList */}
+      <View style={{ height: 12 }} />
+      <Text style={styles.muted}>
+        Next: choose exercises from the library and add them to this draft.
+      </Text>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
+  title: { color: "#ffffff", fontSize: 28, fontWeight: "700", marginBottom: 12 },
+
+  card: {
+    backgroundColor: "#111118",
+    borderWidth: 1,
+    borderColor: "#1f1f2a",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+
+  label: { color: "#a7a7b3", marginBottom: 6, fontSize: 12, fontWeight: "600" },
+  input: {
+    height: 44,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    backgroundColor: "#15151d",
+    color: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#232330",
+  },
+
+  rowHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  sectionTitle: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
+  count: { color: "#a7a7b3", fontSize: 14, fontWeight: "700" },
+
+  muted: { color: "#a7a7b3" },
+
+  exerciseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: "#0f0f15",
+    borderWidth: 1,
+    borderColor: "#1f1f2a",
+  },
+  exerciseName: { color: "#ffffff", fontSize: 15, fontWeight: "600" },
+  exerciseMeta: { color: "#a7a7b3", fontSize: 12, fontWeight: "500" },
+
+  removeBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "#1f1f2a",
+  },
+  removeBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
+});
