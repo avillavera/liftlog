@@ -7,7 +7,7 @@ import WorkoutBuilderScreen from "../screens/WorkoutBuilderScreen";
 
 export type AppStackParamList = {
   Home: undefined;
-  ExerciseList: undefined;
+  ExerciseList: { mode?: "Browse" | "Select" }| undefined;
   WorkoutBuilder: undefined;
 };
 

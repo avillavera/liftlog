@@ -2,8 +2,12 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { AppStackParamList } from "../navigation/AppNavigator";
 
-export default function WorkoutBuilderScreen() {
+type Props = NativeStackScreenProps<AppStackParamList, "WorkoutBuilder">;
+
+export default function WorkoutBuilderScreen({ navigation }: Props) {
   const draft = useWorkoutStore((s) => s.draft);
   const setName = useWorkoutStore((s) => s.setName);
   const removeExercise = useWorkoutStore((s) => s.removeExercise);
@@ -27,7 +31,14 @@ export default function WorkoutBuilderScreen() {
       <View style={styles.card}>
         <View style={styles.rowHeader}>
           <Text style={styles.sectionTitle}>Exercises</Text>
-          <Text style={styles.count}>{draft.exercises.length}</Text>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Text style={styles.count}>{draft.exercises.length}</Text>
+
+              <Pressable onPress={() => navigation.navigate("ExerciseList", { mode: "Select" })} style={styles.addBtn}>
+                <Text style={styles.addBtnText}>Add</Text>
+              </Pressable>
+          </View>
         </View>
 
         {draft.exercises.length === 0 ? (
@@ -65,7 +76,16 @@ export default function WorkoutBuilderScreen() {
 }
 
 const styles = StyleSheet.create({
+  addBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "#1f1f2a",
+  },
+  addBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
+
   container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
+
   title: { color: "#ffffff", fontSize: 28, fontWeight: "700", marginBottom: 12 },
 
   card: {

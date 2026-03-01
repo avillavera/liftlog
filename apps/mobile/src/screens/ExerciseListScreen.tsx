@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExercises } from "../api/exercises";
 import type { Exercise } from "../types/exercise";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { AppStackParamList } from "../navigation/AppNavigator";
+import { useWorkoutStore } from "../stores/workoutStore";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 
-export default function ExerciseListScreen() {
+type Props = NativeStackScreenProps<AppStackParamList, "ExerciseList">;
+
+export default function ExerciseListScreen({ navigation, route }: Props) {
   const [items, setItems] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -18,6 +23,8 @@ export default function ExerciseListScreen() {
   const searchingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedOnceRef = useRef(false);
   const requestIdRef = useRef(0);
+  const mode = route.params?.mode ?? "Browse";
+  const addExercise = useWorkoutStore((s) => s.addExercise);
 
   const debouncedQuery = useDebouncedValue(query, 350);
 
@@ -187,7 +194,7 @@ export default function ExerciseListScreen() {
         />
       </View>
       {searching ? <Text style={styles.searchingText}>Searching…</Text> : null}
-
+      {mode === "Select" ? <Text style={styles.searchingText}>Tap an exercise to add</Text> : null}
       {loading ? (
         <View style={styles.centerWrap}>
           <Text style={styles.mutedText}>Loading…</Text>
@@ -219,14 +226,27 @@ export default function ExerciseListScreen() {
             ) : null
           }
           renderItem={({ item }) => (
-            <View style={styles.row}>
+          <Pressable
+              onPress={() => {
+                if (mode === "Select") {
+                  addExercise(item);
+                  navigation.goBack();
+                  return;
+                }
+              }}
+              disabled={mode !== "Select"}
+              style={({ pressed }) => [
+                styles.row,
+                mode === "Select" && pressed ? { opacity: 0.7 } : null,
+              ]}
+            >
               <View style={styles.rowText}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>
                   {item.muscleGroup} • {item.equipment}
                 </Text>
               </View>
-            </View>
+            </Pressable>
           )}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
