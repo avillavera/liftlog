@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExercises } from "../api/exercises";
@@ -19,6 +19,7 @@ export default function ExerciseListScreen({ navigation, route }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const searchingStartRef = useRef<number | null>(null);
   const searchingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedOnceRef = useRef(false);
@@ -178,6 +179,24 @@ export default function ExerciseListScreen({ navigation, route }: Props) {
     };
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    if (mode !== "Select") return;
+    setSelectedIds(new Set());
+  }, [mode, debouncedQuery]);
+
+  useLayoutEffect(() => {
+    if (mode !== "Select") return;
+
+    navigation.setOptions({
+      title: "Select Exercises",
+      headerRight: () => (
+        <Pressable onPress={() => navigation.goBack()} style={{ paddingHorizontal: 12, paddingVertical: 6 }}>
+          <Text style={{ color: "#ffffff", fontWeight: "700" }}>Done</Text>
+        </Pressable>
+      ),
+    });
+  }, [mode, navigation]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Exercises</Text>
@@ -227,26 +246,35 @@ export default function ExerciseListScreen({ navigation, route }: Props) {
           }
           renderItem={({ item }) => (
           <Pressable
-              onPress={() => {
-                if (mode === "Select") {
-                  addExercise(item);
-                  navigation.goBack();
-                  return;
-                }
-              }}
-              disabled={mode !== "Select"}
-              style={({ pressed }) => [
-                styles.row,
-                mode === "Select" && pressed ? { opacity: 0.7 } : null,
-              ]}
-            >
+            onPress={() => {
+              if (mode !== "Select") return;
+
+              addExercise(item);
+              setSelectedIds((prev) => {
+                const next = new Set(prev);
+                next.add(item.id);
+                return next;
+              });
+            }}
+            disabled={mode !== "Select"}
+            style={({ pressed }) => [
+              styles.row,
+              mode === "Select" && pressed ? { opacity: 0.7 } : null,
+            ]}
+          >
+            <View style={styles.rowInner}>
               <View style={styles.rowText}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>
                   {item.muscleGroup} • {item.equipment}
                 </Text>
               </View>
-            </Pressable>
+
+              {mode === "Select" && selectedIds.has(item.id) ? (
+                <Text style={styles.addedPill}>Added</Text>
+              ) : null}
+            </View>
+          </Pressable>
           )}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
@@ -301,6 +329,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 10,
+    overflow: "hidden",
+  },
+
+  rowInner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  addedPill: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "700",
+    backgroundColor: "#1f1f2a",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
     overflow: "hidden",
   },
 });
