@@ -49,18 +49,21 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
             keyExtractor={(x) => x.id}
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             renderItem={({ item }) => (
-              <View style={styles.exerciseRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.exerciseName}>{item.exercise.name}</Text>
-                  <Text style={styles.exerciseMeta}>
-                    {item.exercise.muscleGroup} • {item.exercise.equipment}
-                  </Text>
-                </View>
+              <Pressable
+                onPress={() => navigation.navigate("WorkoutExerciseDetail", { workoutExerciseId: item.id })}
+                style={({ pressed }) => [styles.exerciseRow, pressed ? { opacity: 0.7 } : null]}
+              >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exerciseName}>{item.exercise.name}</Text>
+                    <Text style={styles.exerciseMeta}>
+                      {item.exercise.muscleGroup} • {item.exercise.equipment}
+                    </Text>
+                  </View>
 
-                <Pressable onPress={() => removeExercise(item.id)} style={styles.removeBtn}>
-                  <Text style={styles.removeBtnText}>Remove</Text>
-                </Pressable>
-              </View>
+                  <Pressable onPress={() => removeExercise(item.id)} style={styles.removeBtn}>
+                    <Text style={styles.removeBtnText}>Remove</Text>
+                  </Pressable>
+              </Pressable>
             )}
           />
         )}

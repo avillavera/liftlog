@@ -4,11 +4,13 @@ import { useAuthStore } from "../stores/authStore";
 import ExerciseListScreen from "../screens/ExerciseListScreen";
 import HomeScreen from "../screens/HomeScreen";
 import WorkoutBuilderScreen from "../screens/WorkoutBuilderScreen";
+import WorkoutExerciseDetailScreen from "../screens/WorkoutExerciseDetailScreen";
 
 export type AppStackParamList = {
   Home: undefined;
   ExerciseList: { mode?: "Browse" | "Select" }| undefined;
   WorkoutBuilder: undefined;
+  WorkoutExerciseDetail: { workoutExerciseId: string };
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -32,6 +34,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: "LiftLog" }} />
       <Stack.Screen name="ExerciseList" component={ExerciseListScreen} options={{ title: "Exercises" }} />
       <Stack.Screen name="WorkoutBuilder" component={WorkoutBuilderScreen} options={{ title: "Workout Builder" }} />
+      <Stack.Screen name="WorkoutExerciseDetail" component={WorkoutExerciseDetailScreen} options={{ title: "Edit Exercise" }} />
     </Stack.Navigator>
   );
 }
