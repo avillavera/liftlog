@@ -9,7 +9,7 @@ type WorkoutState = {
   addExercise: (exercise: Exercise) => void;
   removeExercise: (workoutExerciseId: string) => void;
   resetDraft: () => void;
-  addSet: (WorkoutExerciseId: String) => void;
+  addSet: (workoutExerciseId: string) => void;
   updateSet: (args: { workoutExerciseId: string; setId: string; reps: number; weight: number }) => void;
   removeSet: (args: { workoutExerciseId: string; setId: string }) => void;
 };
