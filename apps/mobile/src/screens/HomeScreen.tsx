@@ -1,14 +1,3 @@
-/* import { View, Text } from "react-native";
-
-export default function HomeScreen() {
-   return (
-     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-       <Text>LiftLog</Text>
-       <Text>Mobile scaffold is running ✅</Text>
-     </View>
-   );
- } */
-
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useAuthStore } from "../stores/authStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -33,6 +22,10 @@ export default function HomeScreen({ navigation }: Props) {
 
       <Pressable style={[styles.button, { marginBottom: 12 }]} onPress={() => navigation.navigate("WorkoutBuilder")} >
         <Text style={styles.buttonText}>Start Workout</Text>
+      </Pressable>
+
+      <Pressable style={[styles.button, { marginBottom: 12 }]} onPress={() => navigation.navigate("WorkoutHistory")} >
+        <Text style={styles.buttonText}>Workout History</Text>
       </Pressable>
     </View>
   );
