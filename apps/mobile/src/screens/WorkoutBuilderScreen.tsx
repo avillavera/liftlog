@@ -2,6 +2,7 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
+import { useWorkoutLogStore } from "../stores/workoutLogStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 
@@ -11,6 +12,8 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   const draft = useWorkoutStore((s) => s.draft);
   const setName = useWorkoutStore((s) => s.setName);
   const removeExercise = useWorkoutStore((s) => s.removeExercise);
+  const addLog = useWorkoutLogStore((s) => s.addLog);
+  const resetDraft = useWorkoutStore((s) => s.resetDraft);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,6 +74,16 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
 
       {/* Next task: "Add exercises" via navigation from ExerciseList */}
       <View style={{ height: 12 }} />
+      <Pressable
+        style={[styles.addBtn, { alignSelf: "flex-start" }]}
+        onPress={() => {
+          const log = addLog(draft);
+          resetDraft();
+          navigation.navigate("WorkoutSummary", { logId: log.id });
+        }}
+      >
+        <Text style={styles.addBtnText}>Finish Workout</Text>
+      </Pressable>
       <Text style={styles.muted}>
         Next: choose exercises from the library and add them to this draft.
       </Text>
