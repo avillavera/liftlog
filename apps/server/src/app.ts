@@ -3,6 +3,7 @@ import cors from "cors";
 import { prisma } from "./db/prisma.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { exercisesRouter } from "./routes/exercises.routes.js"
+import { sessionsRouter } from "./routes/sessions.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
@@ -28,7 +29,8 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 app.use("/auth", authRouter);
-app.use("/exercises", exercisesRouter)
+app.use("/exercises", exercisesRouter);
+app.use("/sessions", sessionsRouter);
 
 app.use(notFound);
 app.use(errorHandler);
