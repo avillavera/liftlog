@@ -5,9 +5,10 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "client"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -35,14 +36,62 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  sessions WorkoutSession[]
 }
 
 model Exercise {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   muscleGroup MuscleGroup
   equipment   Equipment
-  createdAt   DateTime @default(now())
+  createdAt   DateTime    @default(now())
+
+  entries WorkoutEntry[]
 
   @@index([name])
+}
+
+model WorkoutSession {
+  id        String    @id @default(cuid())
+  userId    String
+  startedAt DateTime
+  endedAt   DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries WorkoutEntry[]
+
+  @@index([userId, createdAt])
+}
+
+model WorkoutEntry {
+  id         String @id @default(cuid())
+  sessionId  String
+  exerciseId String
+  order      Int
+
+  session  WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets     WorkoutSet[]
+
+  @@index([sessionId, order])
+  @@index([exerciseId])
+}
+
+model WorkoutSet {
+  id        String   @id @default(cuid())
+  entryId   String
+  setNumber Int
+  weight    Float
+  reps      Int
+  rpe       Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entry WorkoutEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId, setNumber])
 }
