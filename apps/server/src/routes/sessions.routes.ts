@@ -1,10 +1,5 @@
 import { Router } from "express";
-import {
-  createSession,
-  getSessions,
-  getSessionById,
-  deleteSession,
-} from "../controllers/session.controller.js";
+import { createSession, getSessions, getSessionById, deleteSession } from "../controllers/session.controller.js";
 import { createEntry } from "../controllers/entry.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
