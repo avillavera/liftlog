@@ -3,8 +3,9 @@ import { app } from "../app.js";
 import { prisma } from "../db/prisma.js";
 
 beforeEach(async () => {
-  // - Users get wiped for auth tests
-  // - Exercises are stable seeded data (don’t wipe exercises here)
+  await prisma.workoutSet.deleteMany();
+  await prisma.workoutEntry.deleteMany();
+  await prisma.workoutSession.deleteMany();
   await prisma.user.deleteMany();
 });
 

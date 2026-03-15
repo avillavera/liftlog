@@ -4,10 +4,9 @@ import { prisma } from "../db/prisma.js";
 
 beforeEach(async () => {
   // Clean in dependency order
-  // await prisma.workoutSet.deleteMany();
-  // await prisma.workoutEntry.deleteMany();
-  // await prisma.workoutSession.deleteMany();
-  // WE DONT HAVE THESE YET
+  await prisma.workoutSet.deleteMany();
+  await prisma.workoutEntry.deleteMany();
+  await prisma.workoutSession.deleteMany();
   await prisma.user.deleteMany();
 });
 
