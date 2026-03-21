@@ -74,8 +74,8 @@ export const useWorkoutLogStore = create<WorkoutLogState>((set, get) => ({
     };
 
     const next = [log, ...get().logs];
-    set({ logs: next });
     await saveLogs(next);
+    set({ logs: next });
 
     return log;
   },

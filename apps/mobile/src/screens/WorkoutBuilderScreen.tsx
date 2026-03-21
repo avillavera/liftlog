@@ -3,6 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
 import { useWorkoutLogStore } from "../stores/workoutLogStore";
+import { createEntry, createSession, createSet } from "../api/workout";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 
@@ -76,8 +77,28 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
       <View style={{ height: 12 }} />
       <Pressable
         style={[styles.addBtn, { alignSelf: "flex-start" }]}
-        onPress={() => {
-          const log = addLog(draft);
+        onPress={async () => {
+          const startedAt = new Date().toISOString();
+          const session = await createSession({
+            startedAt,
+            notes: draft.name?.trim() ? draft.name.trim() : null,
+          });
+          for (const workoutExercise of draft.exercises) {
+            const entry = await createEntry(session.id, {
+              exerciseId: workoutExercise.exercise.id,
+            });
+
+            for (let index = 0; index < workoutExercise.sets.length; index += 1) {
+              const set = workoutExercise.sets[index];
+
+              await createSet(entry.id, {
+                setNumber: index + 1,
+                weight: set.weight,
+                reps: set.reps,
+              });
+            }
+          }
+          const log = await addLog(draft);
           resetDraft();
           navigation.navigate("WorkoutSummary", { logId: log.id });
         }}
