@@ -3,9 +3,10 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
 import { useWorkoutLogStore } from "../stores/workoutLogStore";
-import { createEntry, createSession, createSet } from "../api/workout";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
+import { createEntry, createSession, createSet } from "../api/workout";
+import { getErrorMessage } from "../utils/apiError";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutBuilder">;
 
@@ -15,6 +16,52 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   const removeExercise = useWorkoutStore((s) => s.removeExercise);
   const addLog = useWorkoutLogStore((s) => s.addLog);
   const resetDraft = useWorkoutStore((s) => s.resetDraft);
+
+  const [saving, setSaving] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+
+  async function handleFinishWorkout() {
+    if (saving) return;
+    if (draft.exercises.length === 0) return;
+
+    setSaving(true);
+    setSaveError(null);
+
+    try {
+      const startedAt = new Date().toISOString();
+
+      const session = await createSession({
+        startedAt,
+        notes: draft.name.trim() ? draft.name.trim() : null,
+      });
+
+      for (const workoutExercise of draft.exercises) {
+        const entry = await createEntry(session.id, {
+          exerciseId: workoutExercise.exercise.id,
+        });
+
+        for (let index = 0; index < workoutExercise.sets.length; index += 1) {
+          const set = workoutExercise.sets[index];
+
+          await createSet(entry.id, {
+            setNumber: index + 1,
+            weight: set.weight,
+            reps: set.reps,
+          });
+        }
+      }
+
+      // Temporary: keep local log so current summary/history screens still work
+      const log = await addLog(draft);
+
+      resetDraft();
+      navigation.navigate("WorkoutSummary", { logId: log.id });
+    } catch (err) {
+      setSaveError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,35 +120,13 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
         )}
       </View>
 
+      {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+
       {/* Next task: "Add exercises" via navigation from ExerciseList */}
       <View style={{ height: 12 }} />
       <Pressable
         style={[styles.addBtn, { alignSelf: "flex-start" }]}
-        onPress={async () => {
-          const startedAt = new Date().toISOString();
-          const session = await createSession({
-            startedAt,
-            notes: draft.name?.trim() ? draft.name.trim() : null,
-          });
-          for (const workoutExercise of draft.exercises) {
-            const entry = await createEntry(session.id, {
-              exerciseId: workoutExercise.exercise.id,
-            });
-
-            for (let index = 0; index < workoutExercise.sets.length; index += 1) {
-              const set = workoutExercise.sets[index];
-
-              await createSet(entry.id, {
-                setNumber: index + 1,
-                weight: set.weight,
-                reps: set.reps,
-              });
-            }
-          }
-          const log = await addLog(draft);
-          resetDraft();
-          navigation.navigate("WorkoutSummary", { logId: log.id });
-        }}
+        onPress={handleFinishWorkout}
       >
         <Text style={styles.addBtnText}>Finish Workout</Text>
       </Pressable>
@@ -150,6 +175,13 @@ const styles = StyleSheet.create({
   count: { color: "#a7a7b3", fontSize: 14, fontWeight: "700" },
 
   muted: { color: "#a7a7b3" },
+
+  errorText: {
+    color: "#ff7b7b",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
 
   exerciseRow: {
     flexDirection: "row",

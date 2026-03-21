@@ -6,6 +6,7 @@ import { useWorkoutLogStore } from "../stores/workoutLogStore";
 import { getToken } from "../storage/authStorage";
 
 export default function AuthLoadingScreen({ navigation }: any) {
+
   useEffect(() => {
     async function bootstrap() {
       try {
