@@ -5,7 +5,7 @@ import { useWorkoutStore } from "../stores/workoutStore";
 import { useWorkoutLogStore } from "../stores/workoutLogStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
-import { createEntry, createSession, createSet } from "../api/workout";
+import { createEntry, createSession, createSet } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutBuilder">;

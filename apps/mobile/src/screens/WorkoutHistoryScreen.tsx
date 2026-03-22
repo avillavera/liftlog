@@ -1,44 +1,81 @@
 import React from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import {ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
-import { useWorkoutLogStore } from "../stores/workoutLogStore";
+import { getSessions } from "../api/workouts";
+import { getErrorMessage } from "../utils/apiError";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutHistory">;
 
-function formatDate(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleString();
+type SessionListItem = Awaited<ReturnType<typeof getSessions>>["items"][number];
+
+function formatDate(ts: string): string {
+  return new Date(ts).toLocaleString();
 }
 
 export default function WorkoutHistoryScreen({ navigation }: Props) {
-  const logs = useWorkoutLogStore((s) => s.logs);
+  const [sessions, setSessions] = React.useState<SessionListItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const loadSessions = React.useCallback(async () => {
+    try {
+      setError(null);
+      const data = await getSessions();
+      setSessions(data.items);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Workout History</Text>
 
-      {logs.length === 0 ? (
+      {loading ? (
+        <View style={styles.centerWrap}>
+          <ActivityIndicator />
+          <View style={{ height: 10 }} />
+          <Text style={styles.muted}>Loading workouts...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerWrap}>
+          <Text style={styles.errorText}>{error}</Text>
+
+          <View style={{ height: 12 }} />
+
+          <Pressable onPress={loadSessions} style={styles.retryBtn}>
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : sessions.length === 0 ? (
         <View style={styles.centerWrap}>
           <Text style={styles.muted}>No workouts yet. Finish one to see it here.</Text>
         </View>
       ) : (
         <FlatList
-          data={logs}
+          data={sessions}
           keyExtractor={(x) => x.id}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           renderItem={({ item }) => {
-            const totalSets = item.workout.exercises.reduce((acc, we) => acc + we.sets.length, 0);
+            const totalSets = item.entries.reduce((acc, entry) => acc + entry.sets.length, 0);
+            const workoutName = item.notes?.trim() ? item.notes.trim() : "Workout";
 
             return (
               <Pressable
                 onPress={() => navigation.navigate("WorkoutSummary", { logId: item.id })}
                 style={({ pressed }) => [styles.row, pressed ? { opacity: 0.7 } : null]}
               >
-                <Text style={styles.rowTitle}>{item.workout.name}</Text>
+                <Text style={styles.rowTitle}>{workoutName}</Text>
                 <Text style={styles.rowMeta}>
-                  {formatDate(item.createdAt)} • {item.workout.exercises.length} exercises • {totalSets} sets
+                  {formatDate(item.createdAt)} • {item.entries.length} exercises • {totalSets} sets
                 </Text>
               </Pressable>
             );
@@ -65,4 +102,19 @@ const styles = StyleSheet.create({
 
   centerWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
   muted: { color: "#a7a7b3" },
+
+  errorText: {
+    color: "#ff7b7b",
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  retryBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "#1f1f2a",
+  },
+  retryBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
 });
