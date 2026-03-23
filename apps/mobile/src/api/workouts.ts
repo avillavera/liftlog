@@ -148,3 +148,8 @@ export async function getSessionById(sessionId: string) {
   const { data } = await api.get<SessionDetailResponse>(`/sessions/${sessionId}`);
   return data.session;
 }
+
+export async function deleteSession(sessionId: string) {
+  const { data } = await api.delete<{ success: true }>(`/sessions/${sessionId}`);
+  return data;
+}

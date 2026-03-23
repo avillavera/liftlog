@@ -1,21 +1,26 @@
 import React from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
-import { getSessionById } from "../api/workouts";
+import { deleteSession, getSessionById } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutSummary">;
 
 type SessionDetail = Awaited<ReturnType<typeof getSessionById>>;
 
-export default function WorkoutSummaryScreen({ route }: Props) {
+function formatDate(value: string){
+  return new Date(value).toLocaleString();
+}
+
+export default function WorkoutSummaryScreen({ navigation, route }: Props) {
   const { logId } = route.params;
 
   const [session, setSession] = React.useState<SessionDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
 
   const loadSession = React.useCallback(async () => {
     try {
@@ -30,6 +35,22 @@ export default function WorkoutSummaryScreen({ route }: Props) {
       setLoading(false);
     }
   }, [logId]);
+
+  async function handleDelete() {
+    if (!session || deleting) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+
+      await deleteSession(session.id);
+      navigation.navigate("WorkoutHistory");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   React.useEffect(() => {
     loadSession();
@@ -47,7 +68,7 @@ export default function WorkoutSummaryScreen({ route }: Props) {
     );
   }
 
-  if (error) {
+  if (error && !session) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerWrap}>
@@ -70,27 +91,70 @@ export default function WorkoutSummaryScreen({ route }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Saved ✅</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.name}>{workoutName}</Text>
-        <Text style={styles.meta}>
-          {session.entries.length} exercises • {totalSets} sets
-        </Text>
-      </View>
-
       <FlatList
         data={session.entries}
         keyExtractor={(x) => x.id}
+        ListHeaderComponent={
+          <>
+            <Text style={styles.title}>Workout Details</Text>
+
+            <View style={styles.card}>
+              <Text style={styles.name}>{workoutName}</Text>
+              <Text style={styles.meta}>
+                {session.entries.length} exercises • {totalSets} sets
+              </Text>
+              <Text style={styles.meta}>{formatDate(session.createdAt)}</Text>
+            </View>
+
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          </>
+        }
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        contentContainerStyle={{ paddingBottom: 24 }}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={styles.rowTitle}>{item.exercise.name}</Text>
             <Text style={styles.rowMeta}>
-              {item.sets.length} set{item.sets.length === 1 ? "" : "s"}
+              {item.exercise.muscleGroup} • {item.exercise.equipment}
             </Text>
+
+            <View style={{ height: 10 }} />
+
+            {item.sets.length === 0 ? (
+              <Text style={styles.muted}>No sets recorded.</Text>
+            ) : (
+              item.sets
+                .slice()
+                .sort((a, b) => a.setNumber - b.setNumber)
+                .map((set) => (
+                  <View key={set.id} style={styles.setRow}>
+                    <Text style={styles.setLabel}>Set {set.setNumber}</Text>
+                    <Text style={styles.setValue}>
+                      {set.weight} lb × {set.reps}
+                    </Text>
+                  </View>
+                ))
+            )}
           </View>
         )}
+        ListFooterComponent={
+          <>
+            <View style={{ height: 16 }} />
+
+            <Pressable
+              onPress={handleDelete}
+              disabled={deleting}
+              style={({ pressed }) => [
+                styles.deleteBtn,
+                (pressed || deleting) ? { opacity: 0.7 } : null,
+              ]}
+            >
+              <Text style={styles.deleteBtnText}>
+                {deleting ? "Deleting..." : "Delete Workout"}
+              </Text>
+            </Pressable>
+          </>
+        }
       />
     </SafeAreaView>
   );
@@ -121,9 +185,39 @@ const styles = StyleSheet.create({
   rowTitle: { color: "#ffffff", fontWeight: "800" },
   rowMeta: { color: "#a7a7b3", fontSize: 12, fontWeight: "600", marginTop: 4 },
 
+  setRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#1f1f2a",
+  },
+
+  setLabel: { color: "#ffffff", fontSize: 13, fontWeight: "700" },
+  setValue: { color: "#a7a7b3", fontSize: 13, fontWeight: "600" },
+
+  deleteBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#2a1414",
+    borderWidth: 1,
+    borderColor: "#4a2020",
+    alignItems: "center",
+  },
+
+  deleteBtnText: { color: "#ff8d8d", fontWeight: "700", fontSize: 13 },
+
   centerWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
 
   muted: { color: "#a7a7b3" },
 
-  errorText: { color: "#ff7b7b", fontSize: 13, fontWeight: "600", textAlign: "center" },
+  errorText: {
+    color: "#ff7b7b",
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 8,
+  },
 });
