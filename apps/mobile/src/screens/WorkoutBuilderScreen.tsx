@@ -2,7 +2,7 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
-import { useWorkoutLogStore } from "../stores/workoutLogStore";
+//import { useWorkoutLogStore } from "../stores/workoutLogStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 import { createEntry, createSession, createSet } from "../api/workouts";
@@ -14,7 +14,7 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   const draft = useWorkoutStore((s) => s.draft);
   const setName = useWorkoutStore((s) => s.setName);
   const removeExercise = useWorkoutStore((s) => s.removeExercise);
-  const addLog = useWorkoutLogStore((s) => s.addLog);
+  //const addLog = useWorkoutLogStore((s) => s.addLog);
   const resetDraft = useWorkoutStore((s) => s.resetDraft);
 
   const [saving, setSaving] = React.useState(false);
@@ -52,10 +52,10 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
       }
 
       // Temporary: keep local log so current summary/history screens still work
-      const log = await addLog(draft);
+      //const log = await addLog(draft);
 
       resetDraft();
-      navigation.navigate("WorkoutSummary", { logId: log.id });
+      navigation.navigate("WorkoutSummary", { logId: session.id });
     } catch (err) {
       setSaveError(getErrorMessage(err));
     } finally {

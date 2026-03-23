@@ -5,4 +5,3 @@ import { getExercises } from "../controllers/exercise.controller.js";
 export const exercisesRouter = Router();
 
 exercisesRouter.get("/", requireAuth, getExercises);
-

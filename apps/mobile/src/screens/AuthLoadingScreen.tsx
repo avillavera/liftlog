@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { authLoadingStyles as styles } from "../styles/authloading.styles";
 import { useAuthStore } from "../stores/authStore";
-import { useWorkoutLogStore } from "../stores/workoutLogStore";
+//import { useWorkoutLogStore } from "../stores/workoutLogStore";
 import { getToken } from "../storage/authStorage";
-
+/*
 export default function AuthLoadingScreen({ navigation }: any) {
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export default function AuthLoadingScreen({ navigation }: any) {
         const token = await getToken();
 
         // hydrate workout history
-        await useWorkoutLogStore.getState().hydrate();
+       // await useWorkoutLogStore.getState().hydrate();
 
         if (token) {
           // restore auth state
@@ -34,7 +34,18 @@ export default function AuthLoadingScreen({ navigation }: any) {
 
     bootstrap();
   }, [navigation]);
+  
 
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
+
+*/
+
+export default function AuthLoadingScreen() {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" />
