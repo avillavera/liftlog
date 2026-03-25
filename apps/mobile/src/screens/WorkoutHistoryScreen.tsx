@@ -1,6 +1,7 @@
 import React from "react";
 import {ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 import { getSessions } from "../api/workouts";
@@ -17,45 +18,74 @@ function formatDate(ts: string): string {
 export default function WorkoutHistoryScreen({ navigation }: Props) {
   const [sessions, setSessions] = React.useState<SessionListItem[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const loadSessions = React.useCallback(async () => {
+  const loadSessions = React.useCallback(async (mode: "initial" | "refresh" = "initial") => {
     try {
       setError(null);
+
+
+      if (mode === "initial") {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
       const data = await getSessions();
       setSessions(data.items);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
-      setLoading(false);
+      if (mode === "initial") {
+        setLoading(false);
+      } else {
+        setRefreshing(false);
+      }
     }
   }, []);
 
-  React.useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadSessions("initial");
+    }, [loadSessions])
+  );
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Workout History</Text>
-
-      {loading ? (
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
         <View style={styles.centerWrap}>
           <ActivityIndicator />
           <View style={{ height: 10 }} />
           <Text style={styles.muted}>Loading workouts...</Text>
         </View>
-      ) : error ? (
+      </SafeAreaView>
+    );
+  }
+
+  if (error && sessions.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
         <View style={styles.centerWrap}>
           <Text style={styles.errorText}>{error}</Text>
 
           <View style={{ height: 12 }} />
 
-          <Pressable onPress={loadSessions} style={styles.retryBtn}>
+          <Pressable onPress={() => loadSessions("initial")} style={styles.retryBtn}>
             <Text style={styles.retryBtnText}>Retry</Text>
           </Pressable>
         </View>
-      ) : sessions.length === 0 ? (
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Workout History</Text>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      {sessions.length === 0 ? (
         <View style={styles.centerWrap}>
           <Text style={styles.muted}>No workouts yet. Finish one to see it here.</Text>
         </View>
@@ -64,6 +94,8 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
           data={sessions}
           keyExtractor={(x) => x.id}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          refreshing={refreshing}
+          onRefresh={() => loadSessions("refresh")}
           renderItem={({ item }) => {
             const totalSets = item.entries.reduce((acc, entry) => acc + entry.sets.length, 0);
             const workoutName = item.notes?.trim() ? item.notes.trim() : "Workout";

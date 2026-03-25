@@ -44,7 +44,7 @@ export default function WorkoutSummaryScreen({ navigation, route }: Props) {
       setError(null);
 
       await deleteSession(session.id);
-      navigation.navigate("WorkoutHistory");
+      navigation.goBack();
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
