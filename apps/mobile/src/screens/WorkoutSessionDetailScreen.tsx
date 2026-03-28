@@ -6,7 +6,7 @@ import type { AppStackParamList } from "../navigation/AppNavigator";
 import { deleteSession, getSessionById } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
 
-type Props = NativeStackScreenProps<AppStackParamList, "WorkoutSummary">;
+type Props = NativeStackScreenProps<AppStackParamList, "WorkoutSessionDetail">;
 
 type SessionDetail = Awaited<ReturnType<typeof getSessionById>>;
 
@@ -14,7 +14,7 @@ function formatDate(value: string){
   return new Date(value).toLocaleString();
 }
 
-export default function WorkoutSummaryScreen({ navigation, route }: Props) {
+export default function WorkoutSessionDetailScreen({ navigation, route }: Props) {
   const { logId } = route.params;
 
   const [session, setSession] = React.useState<SessionDetail | null>(null);

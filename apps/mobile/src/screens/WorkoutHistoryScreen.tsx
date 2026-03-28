@@ -102,7 +102,7 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
 
             return (
               <Pressable
-                onPress={() => navigation.navigate("WorkoutSummary", { logId: item.id })}
+                onPress={() => navigation.navigate("WorkoutSessionDetail", { logId: item.id })}
                 style={({ pressed }) => [styles.row, pressed ? { opacity: 0.7 } : null]}
               >
                 <Text style={styles.rowTitle}>{workoutName}</Text>
