@@ -6,6 +6,7 @@ import { exercisesRouter } from "./routes/exercises.routes.js"
 import { sessionsRouter } from "./routes/sessions.routes.js";
 import { entriesRouter } from "./routes/entries.routes.js";
 import { setsRouter } from "./routes/sets.routes.js";
+import { analyticsRouter } from "./routes/analytics.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
@@ -35,6 +36,7 @@ app.use("/exercises", exercisesRouter);
 app.use("/sessions", sessionsRouter);
 app.use("/entries", entriesRouter);
 app.use("/sets", setsRouter)
+app.use("/analytics", analyticsRouter);
 
 app.use(notFound);
 app.use(errorHandler);
