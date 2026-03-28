@@ -5,7 +5,7 @@ import ExerciseListScreen from "../screens/ExerciseListScreen";
 import HomeScreen from "../screens/HomeScreen";
 import WorkoutBuilderScreen from "../screens/WorkoutBuilderScreen";
 import WorkoutExerciseDetailScreen from "../screens/WorkoutExerciseDetailScreen";
-import WorkoutSummaryScreen from "../screens/WorkoutSummaryScreen"
+import WorkoutSessionDetailScreen from "../screens/WorkoutSessionDetailScreen"
 import WorkoutHistoryScreen from "../screens/WorkoutHistoryScreen";
 
 export type AppStackParamList = {
@@ -13,7 +13,7 @@ export type AppStackParamList = {
   ExerciseList: { mode?: "Browse" | "Select" }| undefined;
   WorkoutBuilder: undefined;
   WorkoutExerciseDetail: { workoutExerciseId: string };
-  WorkoutSummary: { logId: string };
+  WorkoutSessionDetail: { sessionId: string };
   WorkoutHistory: undefined;
 };
 
@@ -26,7 +26,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ExerciseList" component={ExerciseListScreen} options={{ title: "Exercises" }} />
       <Stack.Screen name="WorkoutBuilder" component={WorkoutBuilderScreen} options={{ title: "Workout Builder" }} />
       <Stack.Screen name="WorkoutExerciseDetail" component={WorkoutExerciseDetailScreen} options={{ title: "Edit Exercise" }} />
-      <Stack.Screen name="WorkoutSummary" component={WorkoutSummaryScreen} options={{ title: "Workout Saved" }} />
+      <Stack.Screen name="WorkoutSessionDetail" component={WorkoutSessionDetailScreen} options={{ title: "Workout Saved" }} />
       <Stack.Screen name="WorkoutHistory" component={WorkoutHistoryScreen} options={{ title: "History" }} />
     </Stack.Navigator>
   );

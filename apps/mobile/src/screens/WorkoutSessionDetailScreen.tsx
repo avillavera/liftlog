@@ -15,7 +15,7 @@ function formatDate(value: string){
 }
 
 export default function WorkoutSessionDetailScreen({ navigation, route }: Props) {
-  const { logId } = route.params;
+  const { sessionId } = route.params;
 
   const [session, setSession] = React.useState<SessionDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -27,14 +27,14 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
       setError(null);
       setLoading(true);
 
-      const data = await getSessionById(logId);
+      const data = await getSessionById(sessionId);
       setSession(data);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [logId]);
+  }, [sessionId]);
 
   async function handleDelete() {
     if (!session || deleting) return;

@@ -55,7 +55,7 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
       //const log = await addLog(draft);
 
       resetDraft();
-      navigation.navigate("WorkoutSummary", { logId: session.id });
+      navigation.navigate("WorkoutSessionDetail", { sessionId: session.id });
     } catch (err) {
       setSaveError(getErrorMessage(err));
     } finally {
