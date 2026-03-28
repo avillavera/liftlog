@@ -14,7 +14,6 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   const draft = useWorkoutStore((s) => s.draft);
   const setName = useWorkoutStore((s) => s.setName);
   const removeExercise = useWorkoutStore((s) => s.removeExercise);
-  //const addLog = useWorkoutLogStore((s) => s.addLog);
   const resetDraft = useWorkoutStore((s) => s.resetDraft);
 
   const [saving, setSaving] = React.useState(false);
@@ -50,9 +49,6 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
           });
         }
       }
-
-      // Temporary: keep local log so current summary/history screens still work
-      //const log = await addLog(draft);
 
       resetDraft();
       navigation.navigate("WorkoutSessionDetail", { sessionId: session.id });
