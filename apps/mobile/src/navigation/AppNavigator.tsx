@@ -7,6 +7,7 @@ import WorkoutBuilderScreen from "../screens/WorkoutBuilderScreen";
 import WorkoutExerciseDetailScreen from "../screens/WorkoutExerciseDetailScreen";
 import WorkoutSessionDetailScreen from "../screens/WorkoutSessionDetailScreen"
 import WorkoutHistoryScreen from "../screens/WorkoutHistoryScreen";
+import ExerciseProgressScreen from "../screens/ExerciseProgressScreen";
 
 export type AppStackParamList = {
   Home: undefined;
@@ -15,6 +16,7 @@ export type AppStackParamList = {
   WorkoutExerciseDetail: { workoutExerciseId: string };
   WorkoutSessionDetail: { sessionId: string };
   WorkoutHistory: undefined;
+  ExerciseProgress: { exerciseId: string; exerciseName: string; };
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -28,6 +30,7 @@ export default function AppNavigator() {
       <Stack.Screen name="WorkoutExerciseDetail" component={WorkoutExerciseDetailScreen} options={{ title: "Edit Exercise" }} />
       <Stack.Screen name="WorkoutSessionDetail" component={WorkoutSessionDetailScreen} options={{ title: "Workout Saved" }} />
       <Stack.Screen name="WorkoutHistory" component={WorkoutHistoryScreen} options={{ title: "History" }} />
+      <Stack.Screen name="ExerciseProgress" component={ExerciseProgressScreen} options={{ title: "Exercise Progress"}} />
     </Stack.Navigator>
   );
 }
