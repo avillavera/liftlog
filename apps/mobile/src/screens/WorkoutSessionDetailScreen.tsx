@@ -135,6 +135,22 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
                   </View>
                 ))
             )}
+            <View style={{ height: 12 }} />
+
+            <Pressable
+              onPress={() =>
+                navigation.navigate("ExerciseProgress", {
+                  exerciseId: item.exercise.id,
+                  exerciseName: item.exercise.name,
+                })
+              }
+              style={({ pressed }) => [
+                styles.progressBtn,
+                pressed ? { opacity: 0.7 } : null,
+              ]}
+            >
+              <Text style={styles.progressBtnText}>View Progress</Text>
+            </Pressable>
           </View>
         )}
         ListFooterComponent={
@@ -219,5 +235,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 8,
+  },
+
+  progressBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#141c2a",
+    borderWidth: 1,
+    borderColor: "#22314d",
+    alignItems: "center",
+  },
+
+progressBtnText: {
+    color: "#9ec5ff",
+    fontWeight: "700",
+    fontSize: 13,
   },
 });
