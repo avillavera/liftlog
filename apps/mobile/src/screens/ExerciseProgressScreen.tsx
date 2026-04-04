@@ -3,14 +3,15 @@ import { View, Text, ActivityIndicator, FlatList } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../navigation/AppNavigator";
 import { getExercise1RM } from "../api/analytics";
-import type { Exercise1RMPoint } from "../types/analytics";
+import { markPRs } from "../utils/analytics";
+import type { Exercise1RMPointWithPR } from "../utils/analytics";
 
 type Props = NativeStackScreenProps<AppStackParamList, "ExerciseProgress">;
 
 export default function ExerciseProgressScreen({ route }: Props) {
   const { exerciseId, exerciseName } = route.params;
 
-  const [points, setPoints] = useState<Exercise1RMPoint[]>([]);
+  const [points, setPoints] = useState<Exercise1RMPointWithPR[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function ExerciseProgressScreen({ route }: Props) {
   async function load() {
     try {
       const data = await getExercise1RM(exerciseId);
-      setPoints(data.points);
+      setPoints(markPRs(data.points));
     } catch (err) {
       console.log("analytics error", err);
     } finally {
@@ -65,6 +66,7 @@ export default function ExerciseProgressScreen({ route }: Props) {
             <Text>
               {new Date(item.date).toLocaleDateString()} —{" "}
               {item.estimated1RM.toFixed(1)}
+              {item.isPR ? " PR" : ""}
             </Text>
           </View>
         )}
