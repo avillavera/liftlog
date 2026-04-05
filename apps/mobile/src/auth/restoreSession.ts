@@ -11,7 +11,7 @@ export async function restoreSession() {
     const token = await getToken();
 
     if (!token) {
-      clearSession();
+      await clearSession();
       return;
     }
 
@@ -26,7 +26,7 @@ export async function restoreSession() {
     try {
       await deleteToken();
     } catch {}
-    clearSession();
+    await clearSession();
   } finally {
     setHydrating(false);
   }
