@@ -34,8 +34,15 @@ export async function createSession(req: Request, res: Response) {
 export async function getSessions(req: Request, res: Response) {
   const userId = (req as AuthedRequest).userId;
 
-  const page = Number(req.query.page ?? 1);
-  const limit = Number(req.query.limit ?? 10);
+  const rawPage = Number(req.query.page ?? 1);
+  const rawLimit = Number(req.query.limit ?? 10);
+
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+  const limit =
+    Number.isFinite(rawLimit) && rawLimit > 0
+      ? Math.min(Math.floor(rawLimit), 20)
+      : 10;
+
   const skip = (page - 1) * limit;
 
   const [items, totalCount] = await Promise.all([
@@ -60,12 +67,15 @@ export async function getSessions(req: Request, res: Response) {
       where: { userId },
     }),
   ]);
+  
+  const hasMore = page * limit < totalCount;
 
   return res.json({
     items,
     page,
     limit,
     totalCount,
+    hasMore,
   });
 }
 
