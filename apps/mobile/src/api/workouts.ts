@@ -1,70 +1,11 @@
 import { api } from "./client";
-
-type SessionListItem = {
-  id: string;
-  userId: string;
-  startedAt: string;
-  endedAt: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  entries: Array<{
-    id: string;
-    sessionId: string;
-    exerciseId: string;
-    order: number;
-    exercise: {
-      id: string;
-      name: string;
-      muscleGroup: string;
-      equipment: string;
-    };
-    sets: Array<{
-      id: string;
-      entryId: string;
-      setNumber: number;
-      weight: number;
-      reps: number;
-      rpe: number | null;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-  }>;
-};
-
-type SessionDetailResponse = {
-  session: {
-    id: string;
-    userId: string;
-    startedAt: string;
-    endedAt: string | null;
-    notes: string | null;
-    createdAt: string;
-    updatedAt: string;
-    entries: Array<{
-      id: string;
-      sessionId: string;
-      exerciseId: string;
-      order: number;
-      exercise: {
-        id: string;
-        name: string;
-        muscleGroup: string;
-        equipment: string;
-      };
-      sets: Array<{
-        id: string;
-        entryId: string;
-        setNumber: number;
-        weight: number;
-        reps: number;
-        rpe: number | null;
-        createdAt: string;
-        updatedAt: string;
-      }>;
-    }>;
-  };
-};
+import type {
+  CreateEntryResponse,
+  CreateSessionResponse,
+  CreateSetResponse,
+  GetSessionByIdResponse,
+  GetSessionsResponse,
+} from "../types/workout";
 
 type CreateSessionInput = {
   startedAt: string;
@@ -72,29 +13,8 @@ type CreateSessionInput = {
   notes?: string | null;
 };
 
-type SessionResponse = {
-  session: {
-    id: string;
-    userId: string;
-    startedAt: string;
-    endedAt: string | null;
-    notes: string | null;
-    createdAt: string;
-    updatedAt: string;
-  };
-};
-
 type CreateEntryInput = {
   exerciseId: string;
-};
-
-type EntryResponse = {
-  entry: {
-    id: string;
-    sessionId: string;
-    exerciseId: string;
-    order: number;
-  };
 };
 
 type CreateSetInput = {
@@ -104,48 +24,38 @@ type CreateSetInput = {
   rpe?: number;
 };
 
-type SetResponse = {
-  set: {
-    id: string;
-    entryId: string;
-    setNumber: number;
-    weight: number;
-    reps: number;
-    rpe: number | null;
-    createdAt: string;
-    updatedAt: string;
-  };
-};
-
-type GetSessionsResponse = {
-  items: SessionListItem[];
-  page: number;
-  limit: number;
-  totalCount: number;
+type GetSessionsParams = {
+  page?: number;
+  limit?: number;
 };
 
 export async function createSession(input: CreateSessionInput) {
-  const { data } = await api.post<SessionResponse>("/sessions", input);
+  const { data } = await api.post<CreateSessionResponse>("/sessions", input);
   return data.session;
 }
 
 export async function createEntry(sessionId: string, input: CreateEntryInput) {
-  const { data } = await api.post<EntryResponse>(`/sessions/${sessionId}/entries`, input);
+  const { data } = await api.post<CreateEntryResponse>(`/sessions/${sessionId}/entries`, input);
   return data.entry;
 }
 
 export async function createSet(entryId: string, input: CreateSetInput) {
-  const { data } = await api.post<SetResponse>(`/entries/${entryId}/sets`, input);
+  const { data } = await api.post<CreateSetResponse>(`/entries/${entryId}/sets`, input);
   return data.set;
 }
 
-export async function getSessions() {
-  const { data } = await api.get<GetSessionsResponse>("/sessions");
+export async function getSessions(params: GetSessionsParams = {}) {
+  const { page = 1, limit = 10 } = params;
+
+  const { data } = await api.get<GetSessionsResponse>("/sessions", {
+    params: { page, limit },
+  });
+  
   return data;
 }
 
 export async function getSessionById(sessionId: string) {
-  const { data } = await api.get<SessionDetailResponse>(`/sessions/${sessionId}`);
+  const { data } = await api.get<GetSessionByIdResponse>(`/sessions/${sessionId}`);
   return data.session;
 }
 

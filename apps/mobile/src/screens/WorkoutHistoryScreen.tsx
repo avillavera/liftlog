@@ -17,8 +17,14 @@ function formatDate(ts: string): string {
 
 export default function WorkoutHistoryScreen({ navigation }: Props) {
   const [sessions, setSessions] = React.useState<SessionListItem[]>([]);
+  const [page, setPage] = React.useState(1);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [hasScrolled, setHasScrolled] = React.useState(false);
+
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+
   const [error, setError] = React.useState<string | null>(null);
 
   const loadSessions = React.useCallback(async (mode: "initial" | "refresh" = "initial") => {
@@ -32,8 +38,11 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
         setRefreshing(true);
       }
 
-      const data = await getSessions();
+      const data = await getSessions({ page: 1, limit: 10 });
+
       setSessions(data.items);
+      setPage(data.page);
+      setHasMore(data.hasMore);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -44,6 +53,28 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
       }
     }
   }, []);
+
+  const loadMore = React.useCallback(async () => {
+    if (!hasScrolled || loading || refreshing || loadingMore || !hasMore) {
+      return;
+    }
+
+    try {
+      setLoadingMore(true);
+      setError(null);
+
+      const nextPage = page + 1;
+      const data = await getSessions({ page: nextPage, limit: 10 });
+
+      setSessions((current) => [...current, ...data.items]);
+      setPage(data.page);
+      setHasMore(data.hasMore);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, hasScrolled, loading, loadingMore, page, refreshing]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -96,6 +127,17 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           refreshing={refreshing}
           onRefresh={() => loadSessions("refresh")}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.1}
+          onScrollBeginDrag={() => setHasScrolled(true)}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator />
+              </View>
+            ) : null
+          }
+          contentContainerStyle={{ paddingBottom: 24 }}
           renderItem={({ item }) => {
             const totalSets = item.entries.reduce((acc, entry) => acc + entry.sets.length, 0);
             const workoutName = item.notes?.trim() ? item.notes.trim() : "Workout";
@@ -140,6 +182,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     textAlign: "center",
+  },
+
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: "center",
   },
 
   retryBtn: {
