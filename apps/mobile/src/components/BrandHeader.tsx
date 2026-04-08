@@ -22,26 +22,26 @@ export default function BrandHeader({ subtitle }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
   },
 
   logo: {
-    width: 200,
-    height: 200,
-    marginBottom: 8,
+    width: 160,
+    height: 160,
+    marginBottom: 2,
     opacity: 0.95,
   },
 
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "700",
     color: "#0F172A",
     letterSpacing: 0.3,
   },
 
   subtitle: {
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: 4,
+    fontSize: 15,
     color: "#334155",
   },
 });
