@@ -3,12 +3,17 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExercises } from "../api/exercises";
 import type { Exercise } from "../types/exercise";
+import type { CompositeScreenProps } from "@react-navigation/native";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { AppStackParamList } from "../navigation/AppNavigator";
+import type { AppTabParamList, AppStackParamList } from "../navigation/AppNavigator"
 import { useWorkoutStore } from "../stores/workoutStore";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 
-type Props = NativeStackScreenProps<AppStackParamList, "ExerciseList">;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, "ExerciseLibraryTab">,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 export default function ExerciseListScreen({ navigation, route }: Props) {
   const [items, setItems] = useState<Exercise[]>([]);

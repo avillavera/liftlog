@@ -3,12 +3,17 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
 //import { useWorkoutLogStore } from "../stores/workoutLogStore";
+import type { CompositeScreenProps } from "@react-navigation/native";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { AppStackParamList } from "../navigation/AppNavigator";
+import type { AppTabParamList, AppStackParamList } from "../navigation/AppNavigator";
 import { createEntry, createSession, createSet } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
 
-type Props = NativeStackScreenProps<AppStackParamList, "WorkoutBuilder">;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, "StartWorkoutTab">,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 export default function WorkoutBuilderScreen({ navigation }: Props) {
   const draft = useWorkoutStore((s) => s.draft);
@@ -82,7 +87,7 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <Text style={styles.count}>{draft.exercises.length}</Text>
 
-              <Pressable onPress={() => navigation.navigate("ExerciseList", { mode: "Select" })} style={styles.addBtn}>
+              <Pressable onPress={() => navigation.navigate("ExerciseLibraryTab", { mode: "Select" })} style={styles.addBtn}>
                 <Text style={styles.addBtnText}>Add</Text>
               </Pressable>
           </View>

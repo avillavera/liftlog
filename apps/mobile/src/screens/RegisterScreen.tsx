@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import { Platform, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Pressable } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../navigation/AuthNavigator";
 import BrandHeader from "../components/BrandHeader";
@@ -8,14 +8,16 @@ import authApi from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { getErrorMessage } from "../utils/apiError";
 import AuthBackground from "../components/AuthBackground";
-
+import AuthCard from "../components/AuthCard";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 
 export default function RegisterScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const setSession = useAuthStore((s) => s.setSession);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,6 @@ export default function RegisterScreen({ navigation }: Props) {
     try {
       const data = await authApi.register({ email: email.trim(), password });
       setSession({ token: data.token, user: data.user });
-      
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -49,45 +50,58 @@ export default function RegisterScreen({ navigation }: Props) {
     }
   };
 
-  return (
-    <AuthBackground>
-      <View style={styles.container}>
-
-        <BrandHeader subtitle="Log workouts. Track progress." />
-
-        <Text style={styles.title}>Create your account</Text>
-
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#6B7280"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#6B7280"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-
-        {error ? <Text style={{ color: "crimson", textAlign: "center", marginBottom: 12 }}>{error}</Text> : null}
-
-        <Pressable style={styles.primaryButton} onPress={onSubmit} disabled={isSubmitting}>
-          <Text style={styles.primaryButtonText}>{isSubmitting ? "Registering..." : "Register"}</Text>
-        </Pressable>
-
-        <Pressable onPress={() => navigation.navigate("Login")}>
-          <Text style={styles.link}>
-            Already have an account? <Text style={styles.linkStrong}>Log In</Text>
-          </Text>
-        </Pressable>
-      </View>
-    </AuthBackground>
-  );
+   return (
+      <AuthBackground>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.inner}>
+              <BrandHeader subtitle="Log workouts. Track progress." />
+  
+              <AuthCard
+                  title="Create your account"
+                  footer={
+                    <Pressable onPress={() => navigation.navigate("Login")}>
+                      <Text style={styles.link}>
+                        Already have an account? <Text style={styles.linkStrong}>Log In</Text>
+                      </Text>
+                    </Pressable>
+                  }
+                >
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor="#6B7280"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.input}
+                />
+  
+                <TextInput
+                  placeholder="Password"
+                  placeholderTextColor="#6B7280"
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  style={styles.input}
+                />
+  
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+  
+                <Pressable style={styles.primaryButton} onPress={onSubmit} disabled={isSubmitting}>
+                  <Text style={styles.primaryButtonText}>{isSubmitting ? "Registering..." : "Register"}</Text>
+                </Pressable>
+              </AuthCard>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </AuthBackground>
+    );
 }

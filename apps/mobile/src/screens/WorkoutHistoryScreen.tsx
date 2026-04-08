@@ -2,12 +2,17 @@ import React from "react";
 import {ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
+import type { CompositeScreenProps } from "@react-navigation/native";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { AppStackParamList } from "../navigation/AppNavigator";
+import type { AppTabParamList, AppStackParamList } from "../navigation/AppNavigator";
 import { getSessions } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
 
-type Props = NativeStackScreenProps<AppStackParamList, "WorkoutHistory">;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, "HistoryTab">,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 type SessionListItem = Awaited<ReturnType<typeof getSessions>>["items"][number];
 

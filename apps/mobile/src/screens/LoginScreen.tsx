@@ -41,17 +41,14 @@ export default function LoginScreen({ navigation }: Props) {
     setError(null);
     setIsSubmitting(true);
     try {
-        const data = await authApi.login({ email: email.trim(), password });
-        setSession({ token: data.token, user: data.user });
-    } 
-    catch (err) {
-        setError(getErrorMessage(err));
+      const data = await authApi.login({ email: email.trim(), password });
+      setSession({ token: data.token, user: data.user });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
-    finally {
-        setIsSubmitting(false);
-    }
-  }
-    
+  };  
 
   return (
     <AuthBackground>
