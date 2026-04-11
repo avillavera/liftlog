@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { backgroundStyles as styles} from "../styles/background.styles"
+
 type Props = {
   children: ReactNode;
 };
@@ -20,9 +21,3 @@ export default function AppBackground({ children }: Props) {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

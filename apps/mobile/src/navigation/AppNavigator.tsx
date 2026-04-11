@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View, type PressableProps } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 import HomeScreen from "../screens/HomeScreen";
 import ExerciseListScreen from "../screens/ExerciseListScreen";
@@ -27,8 +28,14 @@ export type AppStackParamList = {
   ExerciseProgress: { exerciseId: string; exerciseName: string };
 };
 
-const Stack = createNativeStackNavigator<AppStackParamList>();
+export type StartWorkoutStackParamList = {
+  WorkoutBuilderHome: undefined;
+  ExerciseList: { mode?: "Browse" | "Select" } | undefined;
+};
+
+const RootStack = createNativeStackNavigator<AppStackParamList>();
 const Tab = createBottomTabNavigator<AppTabParamList>();
+const StartWorkoutStack = createNativeStackNavigator<StartWorkoutStackParamList>();
 
 function StartWorkoutTabButton({ onPress }: { onPress?: PressableProps["onPress"] }) {
   return (
@@ -37,6 +44,37 @@ function StartWorkoutTabButton({ onPress }: { onPress?: PressableProps["onPress"
         <Ionicons name="add" size={30} color="#FFFFFF" />
       </View>
     </Pressable>
+  );
+}
+
+function StartWorkoutNavigator() {
+  return (
+    <StartWorkoutStack.Navigator>
+      <StartWorkoutStack.Screen
+        name="WorkoutBuilderHome"
+        component={WorkoutBuilderScreen}
+        options={{ headerShown: false }}
+      />
+      <StartWorkoutStack.Screen
+        name="ExerciseList"
+        component={ExerciseListScreen}
+        initialParams={{ mode: "Select" }}
+        options={{
+          title: "Select Exercises",
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: "#F7F8FA",
+          },
+          headerTitleStyle: {
+            color: "#111827",
+            fontSize: 20,
+            fontWeight: "700",
+          },
+          headerTintColor: "#111827",
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      />
+    </StartWorkoutStack.Navigator>
   );
 }
 
@@ -75,13 +113,19 @@ function MainTabs() {
 
       <Tab.Screen
         name="StartWorkoutTab"
-        component={WorkoutBuilderScreen}
-        options={{
-          title: "",
-          tabBarIcon: () => null,
-          tabBarButton: (props) => (
-            <StartWorkoutTabButton onPress={props.onPress} />
-          ),
+        component={StartWorkoutNavigator}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "WorkoutBuilderHome";
+          const hideTabBar = routeName === "ExerciseList";
+
+          return {
+            title: "",
+            tabBarIcon: () => null,
+            tabBarButton: (props) => (
+              <StartWorkoutTabButton onPress={props.onPress} />
+            ),
+            tabBarStyle: hideTabBar ? { display: "none" } : styles.tabBar,
+          };
         }}
       />
 
@@ -113,31 +157,31 @@ function MainTabs() {
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
+    <RootStack.Navigator>
+      <RootStack.Screen
         name="MainTabs"
         component={MainTabs}
         options={{ headerShown: false }}
       />
 
-      <Stack.Screen
+      <RootStack.Screen
         name="WorkoutExerciseDetail"
         component={WorkoutExerciseDetailScreen}
         options={{ title: "Edit Exercise" }}
       />
 
-      <Stack.Screen
+      <RootStack.Screen
         name="WorkoutSessionDetail"
         component={WorkoutSessionDetailScreen}
         options={{ title: "Workout Saved" }}
       />
 
-      <Stack.Screen
+      <RootStack.Screen
         name="ExerciseProgress"
         component={ExerciseProgressScreen}
         options={{ title: "Exercise Progress" }}
       />
-    </Stack.Navigator>
+    </RootStack.Navigator>
   );
 }
 

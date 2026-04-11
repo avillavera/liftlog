@@ -2,17 +2,23 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useWorkoutStore } from "../stores/workoutStore";
-//import { useWorkoutLogStore } from "../stores/workoutLogStore";
+import { createEntry, createSession, createSet } from "../api/workouts";
+import { getErrorMessage } from "../utils/apiError";
 import type { CompositeScreenProps } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { AppTabParamList, AppStackParamList } from "../navigation/AppNavigator";
-import { createEntry, createSession, createSet } from "../api/workouts";
-import { getErrorMessage } from "../utils/apiError";
+import type {
+  AppTabParamList,
+  AppStackParamList,
+  StartWorkoutStackParamList,
+} from "../navigation/AppNavigator";
 
 type Props = CompositeScreenProps<
-  BottomTabScreenProps<AppTabParamList, "StartWorkoutTab">,
-  NativeStackScreenProps<AppStackParamList>
+  NativeStackScreenProps<StartWorkoutStackParamList, "WorkoutBuilderHome">,
+  CompositeScreenProps<
+    BottomTabScreenProps<AppTabParamList, "StartWorkoutTab">,
+    NativeStackScreenProps<AppStackParamList>
+  >
 >;
 
 export default function WorkoutBuilderScreen({ navigation }: Props) {
@@ -87,7 +93,7 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <Text style={styles.count}>{draft.exercises.length}</Text>
 
-              <Pressable onPress={() => navigation.navigate("ExerciseLibraryTab", { mode: "Select" })} style={styles.addBtn}>
+              <Pressable onPress={() => navigation.navigate("ExerciseList", { mode: "Select" })} style={styles.addBtn}>
                 <Text style={styles.addBtnText}>Add</Text>
               </Pressable>
           </View>
