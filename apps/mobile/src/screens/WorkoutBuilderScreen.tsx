@@ -1,9 +1,9 @@
 import React from "react";
 import {
+  Alert,
   FlatList,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -41,7 +41,7 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
 
-  async function handleFinishWorkout() {
+  async function saveWorkout() {
     if (saving) return;
     if (draft.exercises.length === 0) return;
 
@@ -79,6 +79,20 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleFinishWorkout() {
+    if (saving) return;
+    if (draft.exercises.length === 0) return;
+
+    Alert.alert(
+      "Finish workout?",
+      "This will save your workout and move you to the summary screen.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Finish", onPress: saveWorkout },
+      ]
+    );
   }
 
   return (

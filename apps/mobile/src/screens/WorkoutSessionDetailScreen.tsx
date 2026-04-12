@@ -1,9 +1,9 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -47,7 +47,7 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
     }
   }, [sessionId]);
 
-  async function handleDelete() {
+  async function deleteWorkout() {
     if (!session || deleting) return;
 
     try {
@@ -61,6 +61,19 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
     } finally {
       setDeleting(false);
     }
+  }
+
+  function handleDelete() {
+    if (!session || deleting) return;
+
+    Alert.alert(
+      "Delete workout?",
+      "This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: deleteWorkout },
+      ]
+    );
   }
 
   React.useEffect(() => {
