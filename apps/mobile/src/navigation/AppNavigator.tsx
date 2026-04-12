@@ -167,19 +167,19 @@ export default function AppNavigator() {
       <RootStack.Screen
         name="WorkoutExerciseDetail"
         component={WorkoutExerciseDetailScreen}
-        options={{ title: "Edit Exercise" }}
+        options={{ title: "" }}
       />
 
       <RootStack.Screen
         name="WorkoutSessionDetail"
         component={WorkoutSessionDetailScreen}
-        options={{ title: "Workout Saved" }}
+        options={{ title: "" }}
       />
 
       <RootStack.Screen
         name="ExerciseProgress"
         component={ExerciseProgressScreen}
-        options={{ title: "Exercise Progress" }}
+        options={{ title: "" }}
       />
     </RootStack.Navigator>
   );

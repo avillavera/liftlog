@@ -97,72 +97,69 @@ export default function ExerciseProgressScreen({ route }: Props) {
     ],
   };
 
-  return (
-    <AppBackground>
-      <SafeAreaViewStack>
-        <FlatList
-          data={points}
-          keyExtractor={(item) => item.sessionId}
-          contentContainerStyle={styles.content}
-          ListHeaderComponent={
-            <>
-              <ScreenHeader
-                title={exerciseName}
-                subtitle="Your progress over time"
-              />
+return (
+  <AppBackground>
+    <SafeAreaViewStack>
+      <ScreenHeader
+        title={exerciseName}
+        subtitle="Your progress over time"
+      />
 
-              <View style={styles.statCard}>
-                <Text style={styles.statLabel}>Latest Estimated 1RM</Text>
-                <Text style={styles.statValue}>
-                  {latest.estimated1RM.toFixed(1)}
-                </Text>
-              </View>
+      <View style={styles.statCard}>
+        <Text style={styles.statLabel}>Latest Estimated 1RM</Text>
+        <Text style={styles.statValue}>
+          {latest.estimated1RM.toFixed(1)}
+        </Text>
+      </View>
 
-              <View style={styles.chartCard}>
-                <LineChart
-                  data={chartData}
-                  width={chartWidth}
-                  height={220}
-                  bezier
-                  withInnerLines={false}
-                  withOuterLines={false}
-                  withShadow={false}
-                  yLabelsOffset={8}
-                  chartConfig={{
-                    backgroundGradientFrom: "#F7F5F8",
-                    backgroundGradientTo: "#F7F5F8",
-                    decimalPlaces: 1,
-                    color: (opacity = 1) => `rgba(11, 21, 48, ${opacity})`,
-                    labelColor: (opacity = 1) =>
-                      `rgba(125, 132, 150, ${opacity})`,
-                    propsForDots: {
-                      r: "4",
-                      strokeWidth: "2",
-                      stroke: "#0B1530",
-                    },
-                  }}
-                  style={styles.chart}
-                />
-              </View>
-
-              <Text style={styles.historyTitle}>History</Text>
-            </>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.historyRow}>
-              <Text style={styles.historyDate}>
-                {new Date(item.date).toLocaleDateString()}
-              </Text>
-
-              <Text style={styles.historyValue}>
-                {item.estimated1RM.toFixed(1)}
-                {item.isPR ? " PR" : ""}
-              </Text>
-            </View>
-          )}
-          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+      <View style={styles.chartCard}>
+        <LineChart
+          data={chartData}
+          width={chartWidth}
+          height={220}
+          bezier
+          withInnerLines={false}
+          withOuterLines={false}
+          withShadow={false}
+          yLabelsOffset={8}
+          chartConfig={{
+            backgroundGradientFrom: "#F7F5F8",
+            backgroundGradientTo: "#F7F5F8",
+            decimalPlaces: 1,
+            color: (opacity = 1) => `rgba(11, 21, 48, ${opacity})`,
+            labelColor: (opacity = 1) =>
+              `rgba(125, 132, 150, ${opacity})`,
+            propsForDots: {
+              r: "4",
+              strokeWidth: "2",
+              stroke: "#0B1530",
+            },
+          }}
+          style={styles.chart}
         />
-      </SafeAreaViewStack>
-    </AppBackground>
-  );
+      </View>
+
+      <Text style={styles.historyTitle}>History</Text>
+
+      <FlatList
+        data={points}
+        keyExtractor={(item) => item.sessionId}
+        contentContainerStyle={styles.historyList}
+        renderItem={({ item }) => (
+          <View style={styles.historyRow}>
+            <Text style={styles.historyDate}>
+              {new Date(item.date).toLocaleDateString()}
+            </Text>
+
+            <Text style={styles.historyValue}>
+              {item.estimated1RM.toFixed(1)}
+              {item.isPR ? " PR" : ""}
+            </Text>
+          </View>
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+      />
+    </SafeAreaViewStack>
+  </AppBackground>
+);
 }

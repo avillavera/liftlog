@@ -7,7 +7,7 @@ type Props = {
 
 export default function SafeAreaViewStack({ children }: Props) {
   return (
-    <SafeAreaView edges={["left", "right", "bottom"]} style={{ flex: 1, paddingHorizontal: 24, paddingTop: 3, }}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={{ flex: 1, paddingHorizontal: 24, paddingTop: 20, }}>
       {children}
     </SafeAreaView>
   );

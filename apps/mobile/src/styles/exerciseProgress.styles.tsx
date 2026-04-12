@@ -16,12 +16,12 @@ export const exerciseProgressStyles = StyleSheet.create({
   },
   statCard: {
     backgroundColor: "#F7F5F8",
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#E3E0E6",
     paddingHorizontal: 20,
     paddingVertical: 18,
-    marginTop: 20,
+    marginTop: 5,
   },
   statLabel: {
     color: "#7D8496",
@@ -37,14 +37,14 @@ export const exerciseProgressStyles = StyleSheet.create({
   chartCard: {
     marginTop: 16,
     backgroundColor: "#F7F5F8",
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#E3E0E6",
     paddingVertical: 12,
     overflow: "hidden",
   },
   chart: {
-    borderRadius: 16,
+    borderRadius: 10,
   },
   historyTitle: {
     marginTop: 20,
@@ -55,7 +55,7 @@ export const exerciseProgressStyles = StyleSheet.create({
   },
   historyRow: {
     backgroundColor: "#F7F5F8",
-    borderRadius: 14,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#E3E0E6",
     paddingHorizontal: 16,
@@ -73,5 +73,8 @@ export const exerciseProgressStyles = StyleSheet.create({
     color: "#7D8496",
     fontSize: 15,
     fontWeight: "700",
+  },
+    historyList: {
+    paddingBottom: 40,
   },
 });
