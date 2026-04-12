@@ -311,7 +311,7 @@ useLayoutEffect(() => {
           <View
             style={{
               backgroundColor: "#F3F1F4",
-              borderRadius: 28,
+              borderRadius: 10,
               padding: 16,
               marginTop: 6,
               flex: 1,

@@ -20,7 +20,7 @@ export const exerciseListStyles = StyleSheet.create({
 
   searchInput: {
     height: 58,
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 20,
     backgroundColor: "#F7F5F8",
     color: "#0B1530",
@@ -74,7 +74,7 @@ export const exerciseListStyles = StyleSheet.create({
 
   row: {
     backgroundColor: "#F7F5F8",
-    borderRadius: 22,
+    borderRadius: 10,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderWidth: 1,

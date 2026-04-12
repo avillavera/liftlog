@@ -1,16 +1,26 @@
 import React from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 import { deleteSession, getSessionById } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
+import AppBackground from "../components/AppBackground";
+import ScreenHeader from "../components/ScreenHeader";
+import SafeAreaViewStack from "../components/SafeAreaViewStack";
+import SafeAreaViewTab from "../components/SafeAreaViewTab";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutSessionDetail">;
 
 type SessionDetail = Awaited<ReturnType<typeof getSessionById>>;
 
-function formatDate(value: string){
+function formatDate(value: string) {
   return new Date(value).toLocaleString();
 }
 
@@ -58,31 +68,66 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerWrap}>
-          <ActivityIndicator />
-          <View style={{ height: 10 }} />
-          <Text style={styles.muted}>Loading workout...</Text>
-        </View>
-      </SafeAreaView>
+      <AppBackground>
+        <SafeAreaViewTab>
+          <ScreenHeader
+            title="Workout Details"
+            subtitle="Review your completed workout"
+          />
+
+          <View style={styles.centerWrap}>
+            <ActivityIndicator />
+            <View style={styles.spacer10} />
+            <Text style={styles.muted}>Loading workout...</Text>
+          </View>
+        </SafeAreaViewTab>
+      </AppBackground>
     );
   }
 
   if (error && !session) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerWrap}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      </SafeAreaView>
+      <AppBackground>
+        <SafeAreaViewTab>
+          <ScreenHeader
+            title="Workout Details"
+            subtitle="Review your completed workout"
+          />
+
+          <View style={styles.centerWrap}>
+            <Text style={styles.errorText}>{error}</Text>
+
+            <View style={styles.spacer12} />
+
+            <Pressable
+              onPress={loadSession}
+              style={({ pressed }) => [
+                styles.secondaryBtn,
+                pressed ? { opacity: 0.82 } : null,
+              ]}
+            >
+              <Text style={styles.secondaryBtnText}>Retry</Text>
+            </Pressable>
+          </View>
+        </SafeAreaViewTab>
+      </AppBackground>
     );
   }
 
   if (!session) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.muted}>Workout not found.</Text>
-      </SafeAreaView>
+      <AppBackground>
+        <SafeAreaViewTab>
+          <ScreenHeader
+            title="Workout Details"
+            subtitle="Review your completed workout"
+          />
+
+          <View style={styles.centerWrap}>
+            <Text style={styles.muted}>Workout not found.</Text>
+          </View>
+        </SafeAreaViewTab>
+      </AppBackground>
     );
   }
 
@@ -90,166 +135,262 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
   const workoutName = session.notes?.trim() ? session.notes.trim() : "Workout";
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={session.entries}
-        keyExtractor={(x) => x.id}
-        ListHeaderComponent={
-          <>
-            <Text style={styles.title}>Workout Details</Text>
+    <AppBackground>
+      <SafeAreaViewStack>
+        <ScreenHeader
+                title="Workout Details"
+                subtitle="Review your completed workout"
+        />
+        <View style={styles.summaryCard}>
+                <Text style={styles.summaryName}>{workoutName}</Text>
+                <Text style={styles.summaryMeta}>
+                  {session.entries.length} exercises • {totalSets} sets
+                </Text>
+                <Text style={styles.summaryDate}>{formatDate(session.createdAt)}</Text>
+              </View>
 
-            <View style={styles.card}>
-              <Text style={styles.name}>{workoutName}</Text>
-              <Text style={styles.meta}>
-                {session.entries.length} exercises • {totalSets} sets
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <FlatList
+          data={session.entries}
+          keyExtractor={(x) => x.id}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <View style={styles.exerciseCard}>
+              <Text style={styles.exerciseName}>{item.exercise.name}</Text>
+              <Text style={styles.exerciseMeta}>
+                {item.exercise.muscleGroup} • {item.exercise.equipment}
               </Text>
-              <Text style={styles.meta}>{formatDate(session.createdAt)}</Text>
+
+              <View style={styles.spacer12} />
+
+              {item.sets.length === 0 ? (
+                <Text style={styles.muted}>No sets recorded.</Text>
+              ) : (
+                item.sets
+                  .slice()
+                  .sort((a, b) => a.setNumber - b.setNumber)
+                  .map((set) => (
+                    <View key={set.id} style={styles.setRow}>
+                      <Text style={styles.setLabel}>Set {set.setNumber}</Text>
+                      <Text style={styles.setValue}>
+                        {set.weight} lb × {set.reps}
+                      </Text>
+                    </View>
+                  ))
+              )}
+
+              <View style={styles.spacer14} />
+
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("ExerciseProgress", {
+                    exerciseId: item.exercise.id,
+                    exerciseName: item.exercise.name,
+                  })
+                }
+                style={({ pressed }) => [
+                  styles.progressBtn,
+                  pressed ? { opacity: 0.82 } : null,
+                ]}
+              >
+                <Text style={styles.progressBtnText}>View Progress</Text>
+              </Pressable>
             </View>
+          )}
+        />
+        <>
+          <View style={styles.spacer18} />
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          </>
-        }
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.rowTitle}>{item.exercise.name}</Text>
-            <Text style={styles.rowMeta}>
-              {item.exercise.muscleGroup} • {item.exercise.equipment}
+          <Pressable
+            onPress={handleDelete}
+            disabled={deleting}
+            style={({ pressed }) => [
+              styles.deleteBtn,
+              (pressed || deleting) ? { opacity: 0.82 } : null,
+            ]}
+          >
+            <Text style={styles.deleteBtnText}>
+              {deleting ? "Deleting..." : "Delete Workout"}
             </Text>
-
-            <View style={{ height: 10 }} />
-
-            {item.sets.length === 0 ? (
-              <Text style={styles.muted}>No sets recorded.</Text>
-            ) : (
-              item.sets
-                .slice()
-                .sort((a, b) => a.setNumber - b.setNumber)
-                .map((set) => (
-                  <View key={set.id} style={styles.setRow}>
-                    <Text style={styles.setLabel}>Set {set.setNumber}</Text>
-                    <Text style={styles.setValue}>
-                      {set.weight} lb × {set.reps}
-                    </Text>
-                  </View>
-                ))
-            )}
-            <View style={{ height: 12 }} />
-
-            <Pressable
-              onPress={() =>
-                navigation.navigate("ExerciseProgress", {
-                  exerciseId: item.exercise.id,
-                  exerciseName: item.exercise.name,
-                })
-              }
-              style={({ pressed }) => [
-                styles.progressBtn,
-                pressed ? { opacity: 0.7 } : null,
-              ]}
-            >
-              <Text style={styles.progressBtnText}>View Progress</Text>
-            </Pressable>
-          </View>
-        )}
-        ListFooterComponent={
-          <>
-            <View style={{ height: 16 }} />
-
-            <Pressable
-              onPress={handleDelete}
-              disabled={deleting}
-              style={({ pressed }) => [
-                styles.deleteBtn,
-                (pressed || deleting) ? { opacity: 0.7 } : null,
-              ]}
-            >
-              <Text style={styles.deleteBtnText}>
-                {deleting ? "Deleting..." : "Delete Workout"}
-              </Text>
-            </Pressable>
-          </>
-        }
-      />
-    </SafeAreaView>
+          </Pressable>
+        </>
+      </SafeAreaViewStack>
+    </AppBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
-  title: { color: "#ffffff", fontSize: 28, fontWeight: "800", marginBottom: 12 },
-
-  card: {
-    backgroundColor: "#111118",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 8,
   },
-  name: { color: "#ffffff", fontSize: 16, fontWeight: "800", marginBottom: 4 },
-  meta: { color: "#a7a7b3", fontSize: 12, fontWeight: "600" },
 
-  row: {
-    backgroundColor: "#111118",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-    borderRadius: 12,
-    padding: 12,
+  listContent: {
+    paddingBottom: 140,
   },
-  rowTitle: { color: "#ffffff", fontWeight: "800" },
-  rowMeta: { color: "#a7a7b3", fontSize: 12, fontWeight: "600", marginTop: 4 },
+
+  separator: {
+    height: 14,
+  },
+
+  centerWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+
+  summaryCard: {
+    backgroundColor: "#F7F5F8",
+    borderWidth: 1,
+    borderColor: "#E3E0E6",
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    marginBottom: 14,
+  },
+
+  summaryName: {
+    color: "#0B1530",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+
+  summaryMeta: {
+    color: "#7D8496",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+
+  summaryDate: {
+    color: "#8A90A3",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  exerciseCard: {
+    backgroundColor: "#F7F5F8",
+    borderWidth: 1,
+    borderColor: "#E3E0E6",
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+
+  exerciseName: {
+    color: "#0B1530",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 3,
+  },
+
+  exerciseMeta: {
+    color: "#7D8496",
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
 
   setRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#1f1f2a",
+    borderTopColor: "#E7E3E9",
   },
 
-  setLabel: { color: "#ffffff", fontSize: 13, fontWeight: "700" },
-  setValue: { color: "#a7a7b3", fontSize: 13, fontWeight: "600" },
+  setLabel: {
+    color: "#0B1530",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  setValue: {
+    color: "#7D8496",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  progressBtn: {
+    minHeight: 46,
+    borderRadius: 10,
+    backgroundColor: "#EAF2FF",
+    borderWidth: 1,
+    borderColor: "#D7E5FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  progressBtnText: {
+    color: "#2454A6",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
   deleteBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    minHeight: 48,
     borderRadius: 10,
-    backgroundColor: "#2a1414",
+    backgroundColor: "#FCEDEE",
     borderWidth: 1,
-    borderColor: "#4a2020",
+    borderColor: "#F3D4D8",
     alignItems: "center",
+    justifyContent: "center",
   },
 
-  deleteBtnText: { color: "#ff8d8d", fontWeight: "700", fontSize: 13 },
+  deleteBtnText: {
+    color: "#B5475A",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
-  centerWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
+  secondaryBtn: {
+    minHeight: 46,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    backgroundColor: "#0B1530",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-  muted: { color: "#a7a7b3" },
+  secondaryBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  muted: {
+    color: "#7D8496",
+    fontSize: 16,
+    textAlign: "center",
+  },
 
   errorText: {
-    color: "#ff7b7b",
-    fontSize: 13,
+    color: "#C65B68",
+    fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 8,
   },
 
-  progressBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#141c2a",
-    borderWidth: 1,
-    borderColor: "#22314d",
-    alignItems: "center",
+  spacer10: {
+    height: 10,
   },
 
-progressBtnText: {
-    color: "#9ec5ff",
-    fontWeight: "700",
-    fontSize: 13,
+  spacer12: {
+    height: 12,
+  },
+
+  spacer14: {
+    height: 14,
+  },
+
+  spacer18: {
+    height: 18,
   },
 });
