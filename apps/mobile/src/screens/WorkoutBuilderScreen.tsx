@@ -1,6 +1,13 @@
 import React from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useWorkoutStore } from "../stores/workoutStore";
 import { createEntry, createSession, createSet } from "../api/workouts";
 import { getErrorMessage } from "../utils/apiError";
@@ -12,6 +19,10 @@ import type {
   AppStackParamList,
   StartWorkoutStackParamList,
 } from "../navigation/AppNavigator";
+import { workoutBuilderStyles as styles } from "../styles/workoutBuilder.styles";
+import AppBackground from "../components/AppBackground";
+import ScreenHeader from "../components/ScreenHeader";
+import SafeAreaViewTab from "../components/SafeAreaViewTab";
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<StartWorkoutStackParamList, "WorkoutBuilderHome">,
@@ -71,144 +82,129 @@ export default function WorkoutBuilderScreen({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Workout Builder</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>Workout name</Text>
-        <TextInput
-          value={draft.name}
-          onChangeText={setName}
-          placeholder="New Workout"
-          placeholderTextColor="#8b8b8b"
-          style={styles.input}
-          autoCorrect={false}
+    <AppBackground>
+      <SafeAreaViewTab>
+        <ScreenHeader
+          title="Workout Builder"
+          subtitle="Start your workout"
         />
-      </View>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
 
-      <View style={styles.card}>
-        <View style={styles.rowHeader}>
-          <Text style={styles.sectionTitle}>Exercises</Text>
-
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Text style={styles.count}>{draft.exercises.length}</Text>
-
-              <Pressable onPress={() => navigation.navigate("ExerciseList", { mode: "Select" })} style={styles.addBtn}>
-                <Text style={styles.addBtnText}>Add</Text>
-              </Pressable>
+          <View style={styles.card}>
+            <Text style={styles.label}>Workout name</Text>
+            <TextInput
+              value={draft.name}
+              onChangeText={setName}
+              placeholder="New Workout"
+              placeholderTextColor="#8A90A3"
+              style={styles.input}
+              autoCorrect={false}
+            />
           </View>
-        </View>
 
-        {draft.exercises.length === 0 ? (
-          <Text style={styles.muted}>No exercises yet. Add from the library next.</Text>
-        ) : (
-          <FlatList
-            data={draft.exercises}
-            keyExtractor={(x) => x.id}
-            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => navigation.navigate("WorkoutExerciseDetail", { workoutExerciseId: item.id })}
-                style={({ pressed }) => [styles.exerciseRow, pressed ? { opacity: 0.7 } : null]}
-              >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.exerciseName}>{item.exercise.name}</Text>
-                    <Text style={styles.exerciseMeta}>
-                      {item.exercise.muscleGroup} • {item.exercise.equipment}
-                    </Text>
-                  </View>
+          <View style={styles.card}>
+            <View style={styles.rowHeader}>
+              <View style={styles.rowHeaderTop}>
+                <Text style={styles.sectionTitle}>Exercises</Text>
 
-                  <Pressable onPress={() => removeExercise(item.id)} style={styles.removeBtn}>
-                    <Text style={styles.removeBtnText}>Remove</Text>
+                <Pressable
+                  onPress={() => navigation.navigate("ExerciseList", { mode: "Select" })}
+                  style={({ pressed }) => [
+                    styles.secondaryBtn,
+                    pressed ? { opacity: 0.82 } : null,
+                  ]}
+                >
+                  <Text style={styles.secondaryBtnText}>Add</Text>
+                </Pressable>
+              </View>
+
+              <Text style={styles.sectionSubtitle}>
+                Add and edit the exercises in this workout
+              </Text>
+
+              {draft.exercises.length > 0 ? (
+                <Text style={styles.countText}>
+                  {draft.exercises.length} {draft.exercises.length === 1 ? "exercise" : "exercises"}
+                </Text>
+              ) : null}
+            </View>
+
+            {draft.exercises.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>No exercises yet</Text>
+                <Text style={styles.emptyText}>
+                  Add exercises from your library to start building this workout.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={draft.exercises}
+                keyExtractor={(x) => x.id}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() =>
+                      navigation.navigate("WorkoutExerciseDetail", {
+                        workoutExerciseId: item.id,
+                      })
+                    }
+                    style={({ pressed }) => [
+                      styles.exerciseRow,
+                      pressed ? { opacity: 0.82 } : null,
+                    ]}
+                  >
+                    <View style={styles.exerciseTextWrap}>
+                      <Text style={styles.exerciseName}>
+                        {item.exercise.name}
+                      </Text>
+                      <Text style={styles.exerciseMeta}>
+                        {item.exercise.muscleGroup} • {item.exercise.equipment}
+                      </Text>
+                      <Text style={styles.exerciseSets}>
+                        {item.sets.length} {item.sets.length === 1 ? "set" : "sets"}
+                      </Text>
+                    </View>
+
+                    <Pressable
+                      onPress={() => removeExercise(item.id)}
+                      style={({ pressed }) => [
+                        styles.removeBtn,
+                        pressed ? { opacity: 0.82 } : null,
+                      ]}
+                    >
+                      <Text style={styles.removeBtnText}>Remove</Text>
+                    </Pressable>
                   </Pressable>
-              </Pressable>
+                )}
+              />
             )}
-          />
-        )}
-      </View>
+          </View>
 
-      {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+          {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
 
-      {/* Next task: "Add exercises" via navigation from ExerciseList */}
-      <View style={{ height: 12 }} />
-      <Pressable
-        style={[styles.addBtn, { alignSelf: "flex-start" }]}
-        onPress={handleFinishWorkout}
-      >
-        <Text style={styles.addBtnText}>Finish Workout</Text>
-      </Pressable>
-      <Text style={styles.muted}>
-        Next: choose exercises from the library and add them to this draft.
-      </Text>
-    </SafeAreaView>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              (pressed || saving || draft.exercises.length === 0) ? { opacity: 0.82 } : null,
+              draft.exercises.length === 0 ? styles.primaryBtnDisabled : null,
+            ]}
+            onPress={handleFinishWorkout}
+            disabled={saving || draft.exercises.length === 0}
+          >
+            <Text style={styles.primaryBtnText}>
+              {saving ? "Saving..." : "Finish Workout"}
+            </Text>
+          </Pressable>
+
+          <Text style={styles.helperText}>
+            Add exercises, log your sets, and save the session when you're done.
+          </Text>
+        </ScrollView>
+      </SafeAreaViewTab>
+    </AppBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  addBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: "#1f1f2a",
-  },
-  addBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
-
-  container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
-
-  title: { color: "#ffffff", fontSize: 28, fontWeight: "700", marginBottom: 12 },
-
-  card: {
-    backgroundColor: "#111118",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-
-  label: { color: "#a7a7b3", marginBottom: 6, fontSize: 12, fontWeight: "600" },
-  input: {
-    height: 44,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    backgroundColor: "#15151d",
-    color: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#232330",
-  },
-
-  rowHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
-  count: { color: "#a7a7b3", fontSize: 14, fontWeight: "700" },
-
-  muted: { color: "#a7a7b3" },
-
-  errorText: {
-    color: "#ff7b7b",
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-
-  exerciseRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: "#0f0f15",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-  },
-  exerciseName: { color: "#ffffff", fontSize: 15, fontWeight: "600" },
-  exerciseMeta: { color: "#a7a7b3", fontSize: 12, fontWeight: "500" },
-
-  removeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: "#1f1f2a",
-  },
-  removeBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
-});

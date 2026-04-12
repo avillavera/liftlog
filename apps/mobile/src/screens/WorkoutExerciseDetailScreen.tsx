@@ -1,14 +1,25 @@
 import React from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../navigation/AppNavigator";
 import { useWorkoutStore } from "../stores/workoutStore";
+import { exerciseDetailStyles as styles } from "../styles/workoutExerciseDetail.styles";
+import AppBackground from "../components/AppBackground";
+import SafeAreaViewStack from "../components/SafeAreaViewStack";
 
 type Props = NativeStackScreenProps<AppStackParamList, "WorkoutExerciseDetail">;
 
 function toNumber(input: string): number {
-  // allow empty string while typing without NaN spam
   if (input.trim() === "") return 0;
   const n = Number(input);
   return Number.isFinite(n) ? n : 0;
@@ -27,139 +38,141 @@ export default function WorkoutExerciseDetailScreen({ route }: Props) {
 
   if (!workoutExercise) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.muted}>Exercise not found.</Text>
-      </SafeAreaView>
+      <AppBackground>
+        <SafeAreaViewStack>
+          <View style={styles.centerWrap}>
+            <Text style={styles.muted}>Exercise not found.</Text>
+          </View>
+        </SafeAreaViewStack>
+      </AppBackground>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerCard}>
-        <Text style={styles.exerciseName}>{workoutExercise.exercise.name}</Text>
-        <Text style={styles.exerciseMeta}>
-          {workoutExercise.exercise.muscleGroup} • {workoutExercise.exercise.equipment}
-        </Text>
-      </View>
-
-      <View style={styles.topRow}>
-        <Text style={styles.sectionTitle}>Sets</Text>
-
-        <Pressable onPress={() => addSet(workoutExerciseId)} style={styles.addBtn}>
-          <Text style={styles.addBtnText}>Add set</Text>
-        </Pressable>
-      </View>
-
-      <FlatList
-        data={workoutExercise.sets}
-        keyExtractor={(s) => s.id}
-        contentContainerStyle={workoutExercise.sets.length === 0 ? styles.emptyContent : styles.listContent}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        ListEmptyComponent={<Text style={styles.muted}>No sets yet. Add your first set.</Text>}
-        renderItem={({ item, index }) => (
-          <View style={styles.setCard}>
-            <View style={styles.setHeader}>
-              <Text style={styles.setTitle}>Set {index + 1}</Text>
-
-              <Pressable onPress={() => removeSet({ workoutExerciseId, setId: item.id })} style={styles.removeBtn}>
-                <Text style={styles.removeBtnText}>Remove</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.inputsRow}>
-              <View style={styles.inputWrap}>
-                <Text style={styles.inputLabel}>Weight</Text>
-                <TextInput
-                  value={String(item.weight)}
-                  onChangeText={(v) =>
-                    updateSet({
-                      workoutExerciseId,
-                      setId: item.id,
-                      weight: toNumber(v),
-                      reps: item.reps,
-                    })
-                  }
-                  keyboardType="numeric"
-                  placeholder="0"
-                  placeholderTextColor="#8b8b8b"
-                  style={styles.input}
-                />
+    <AppBackground>
+      <SafeAreaViewStack>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            style={styles.flex}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={styles.flex}>
+              <View style={styles.headerCard}>
+                <Text style={styles.exerciseName}>
+                  {workoutExercise.exercise.name}
+                </Text>
+                <Text style={styles.exerciseMeta}>
+                  {workoutExercise.exercise.muscleGroup} •{" "}
+                  {workoutExercise.exercise.equipment}
+                </Text>
               </View>
 
-              <View style={styles.inputWrap}>
-                <Text style={styles.inputLabel}>Reps</Text>
-                <TextInput
-                  value={String(item.reps)}
-                  onChangeText={(v) =>
-                    updateSet({
-                      workoutExerciseId,
-                      setId: item.id,
-                      reps: toNumber(v),
-                      weight: item.weight,
-                    })
-                  }
-                  keyboardType="numeric"
-                  placeholder="0"
-                  placeholderTextColor="#8b8b8b"
-                  style={styles.input}
-                />
+              <View style={styles.topRow}>
+                <View>
+                  <Text style={styles.sectionTitle}>Sets</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Log the weight and reps for each set
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={() => addSet(workoutExerciseId)}
+                  style={({ pressed }) => [
+                    styles.addBtn,
+                    pressed ? { opacity: 0.82 } : null,
+                  ]}
+                >
+                  <Text style={styles.addBtnText}>Add set</Text>
+                </Pressable>
               </View>
+
+              <FlatList
+                keyboardShouldPersistTaps="handled"
+                data={workoutExercise.sets}
+                keyExtractor={(s) => s.id}
+                contentContainerStyle={
+                  workoutExercise.sets.length === 0
+                    ? styles.emptyContent
+                    : styles.listContent
+                }
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+                ListEmptyComponent={
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>No sets yet</Text>
+                    <Text style={styles.emptyText}>
+                      Add your first set to start logging.
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item, index }) => (
+                  <View style={styles.setCard}>
+                    <View style={styles.setHeader}>
+                      <Text style={styles.setTitle}>Set {index + 1}</Text>
+
+                      <Pressable
+                        onPress={() =>
+                          removeSet({
+                            workoutExerciseId,
+                            setId: item.id,
+                          })
+                        }
+                        style={({ pressed }) => [
+                          styles.removeBtn,
+                          pressed ? { opacity: 0.82 } : null,
+                        ]}
+                      >
+                        <Text style={styles.removeBtnText}>Remove</Text>
+                      </Pressable>
+                    </View>
+
+                    <View style={styles.inputsRow}>
+                      <View style={styles.inputWrap}>
+                        <Text style={styles.inputLabel}>Weight</Text>
+                        <TextInput
+                          value={String(item.weight)}
+                          onChangeText={(v) =>
+                            updateSet({
+                              workoutExerciseId,
+                              setId: item.id,
+                              weight: toNumber(v),
+                              reps: item.reps,
+                            })
+                          }
+                          keyboardType="numeric"
+                          returnKeyType="done"
+                          placeholder="0"
+                          placeholderTextColor="#8A90A3"
+                          style={styles.input}
+                        />
+                      </View>
+
+                      <View style={styles.inputWrap}>
+                        <Text style={styles.inputLabel}>Reps</Text>
+                        <TextInput
+                          value={String(item.reps)}
+                          onChangeText={(v) =>
+                            updateSet({
+                              workoutExerciseId,
+                              setId: item.id,
+                              reps: toNumber(v),
+                              weight: item.weight,
+                            })
+                          }
+                          keyboardType="numeric"
+                          returnKeyType="done"
+                          placeholder="0"
+                          placeholderTextColor="#8A90A3"
+                          style={styles.input}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                )}
+              />
             </View>
-          </View>
-        )}
-      />
-    </SafeAreaView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </SafeAreaViewStack>
+    </AppBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0b0b0f", paddingHorizontal: 16, paddingTop: 8 },
-
-  headerCard: {
-    backgroundColor: "#111118",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-  exerciseName: { color: "#ffffff", fontSize: 18, fontWeight: "800", marginBottom: 4 },
-  exerciseMeta: { color: "#a7a7b3", fontSize: 12, fontWeight: "600" },
-
-  topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
-  sectionTitle: { color: "#ffffff", fontSize: 16, fontWeight: "800" },
-
-  addBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#1f1f2a" },
-  addBtnText: { color: "#ffffff", fontWeight: "800", fontSize: 12 },
-
-  listContent: { paddingBottom: 20 },
-  emptyContent: { paddingBottom: 20, flexGrow: 1 },
-
-  setCard: {
-    backgroundColor: "#111118",
-    borderWidth: 1,
-    borderColor: "#1f1f2a",
-    borderRadius: 12,
-    padding: 12,
-  },
-  setHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
-  setTitle: { color: "#ffffff", fontWeight: "800" },
-
-  inputsRow: { flexDirection: "row", alignItems: "flex-end", gap: 10 },
-  inputWrap: { flex: 1 },
-  inputLabel: { color: "#a7a7b3", fontSize: 12, fontWeight: "700", marginBottom: 6 },
-  input: {
-    height: 42,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    backgroundColor: "#15151d",
-    color: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#232330",
-  },
-
-  removeBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#1f1f2a" },
-  removeBtnText: { color: "#ffffff", fontWeight: "800", fontSize: 12 },
-
-  muted: { color: "#a7a7b3" },
-});
