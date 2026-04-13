@@ -11,7 +11,13 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
 
-app.use(cors());
+const allowedOrigin = process.env.CORS_ORIGIN;
+
+app.use(
+  cors({
+    origin: allowedOrigin ? allowedOrigin : true,
+  })
+);
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
@@ -24,12 +30,12 @@ app.get("/health/db", async (_req, res) => {
 });
 
 // Optional: keep this only for dev
-if (process.env.NODE_ENV !== "test") {
+/*if (process.env.NODE_ENV !== "test") {
   app.get("/db-check", async (_req, res) => {
     const result = await prisma.user.findMany({ take: 1 });
     res.json({ ok: true, sampleUsers: result });
   });
-}
+}*/
 
 app.use("/auth", authRouter);
 app.use("/exercises", exercisesRouter);
