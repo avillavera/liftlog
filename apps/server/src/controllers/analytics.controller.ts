@@ -49,16 +49,25 @@ export async function getExercise1RMProgress(req: Request, res: Response) {
     },
   });
 
-  const rows = sessions.flatMap((session) =>
-    session.entries.flatMap((entry) =>
-      entry.sets.map((set) => ({
-        sessionId: session.id,
-        date: session.createdAt,
-        weight: set.weight,
-        reps: set.reps,
-      }))
-    )
-  );
+  const rows: Array<{
+    sessionId: string;
+    date: Date;
+    weight: number;
+    reps: number;
+  }> = [];
+
+  for (const session of sessions) {
+    for (const entry of session.entries) {
+      for (const set of entry.sets) {
+        rows.push({
+          sessionId: session.id,
+          date: session.createdAt,
+          weight: set.weight,
+          reps: set.reps,
+        });
+      }
+    }
+  }
 
   const points = buildExercise1RMPoints(rows);
 
