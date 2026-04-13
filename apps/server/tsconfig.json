@@ -3,7 +3,7 @@
   "compilerOptions": {
     // File Layout
     "esModuleInterop": true,
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
 
     // Environment Settings
@@ -44,7 +44,7 @@
     "skipLibCheck": true,
   },
   
-  "include": ["src/**/*.ts", "src/test/setupEnv.cjs"],
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "src/test/setupEnv.cjs"],
   "exclude": [
     "node_modules",
     "dist",

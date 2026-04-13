@@ -1,14 +1,7 @@
-import { PrismaClient, Prisma, MuscleGroup, Equipment } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
-
+/// <reference types="node" />
+import "dotenv/config";
+import { Prisma, MuscleGroup, Equipment } from "@prisma/client";
+import { prisma } from "../src/db/prisma.js";
 
 const EXERCISES: Prisma.ExerciseCreateManyInput[] = [
   // CHEST
@@ -82,13 +75,18 @@ const EXERCISES: Prisma.ExerciseCreateManyInput[] = [
 ];
 
 async function main() {
-  // For MVP/dev seeding, keeping it deterministic.
-  // Might adjust this to avoid wiping user created exercises if supported later.
-  await prisma.exercise.deleteMany();
+  const existingCount = await prisma.exercise.count();
+
+  if (existingCount > 0) {
+    console.log(`Seed skipped: ${existingCount} exercises already exist.`);
+    return;
+  }
+
   await prisma.exercise.createMany({
     data: EXERCISES,
-    skipDuplicates: true,
   });
+
+  console.log(`Seeded ${EXERCISES.length} exercises.`);
 }
 
 main()
