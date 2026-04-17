@@ -96,7 +96,7 @@ The backend is deployed and connected to production infrastructure, while the mo
 
 * Improved analytics depth
 * Exercise presets / templates
-* Social features
+* Languages
 * Advanced PR tracking
 * Push notifications
 
